@@ -1,4 +1,4 @@
-# app/db.py
+# app/connection.py
 
 import os
 from dotenv import load_dotenv
