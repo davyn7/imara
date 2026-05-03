@@ -67,4 +67,32 @@ async def delete_shareholder_db(shareholder_id: UUID):
 
 async def delete_shareholders_db():
     response = supabase.table("shareholders").delete().neq("id", "00000000-0000-0000-0000-000000000000").execute()
-    return response.data   
+    return response.data
+
+# Equity Round DB Operations
+
+async def get_equity_rounds_db():
+    response = supabase.table("equity_rounds").select("*").execute()
+    return response.data
+
+async def get_equity_round_db(equity_round_id: UUID):
+    response = supabase.table("equity_rounds").select("*").eq("id", equity_round_id).execute()
+    return response.data
+
+async def add_equity_round_db(equity_round: EquityRoundBase):
+    equity_round_data = equity_round.model_dump(mode="json")
+    response = supabase.table("equity_rounds").insert(equity_round_data).execute()
+    return response.data
+
+async def update_equity_round_db(equity_round: EquityRoundBase, equity_round_id: UUID):
+    equity_round_data = equity_round.model_dump(mode="json", exclude_unset=True)
+    response = supabase.table("equity_rounds").update(equity_round_data).eq("id", equity_round_id).execute()
+    return response.data
+
+async def delete_equity_round_db(equity_round_id: UUID):
+    response = supabase.table("equity_rounds").delete().eq("id", equity_round_id).execute()
+    return response.data
+
+async def delete_equity_rounds_db():
+    response = supabase.table("equity_rounds").delete().neq("id", "00000000-0000-0000-0000-000000000000").execute()
+    return response.data

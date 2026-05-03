@@ -24,9 +24,21 @@ from app.db import (
     add_shareholder_db,
     update_shareholder_db,
     delete_shareholder_db,
-    delete_shareholders_db
+    delete_shareholders_db,
+    get_equity_rounds_db,
+    get_equity_round_db,
+    add_equity_round_db,
+    update_equity_round_db,
+    delete_equity_round_db,
+    delete_equity_rounds_db
 )
 from uuid import UUID
+
+# Activity Log Manager
+# TODO: Implement Activity Log Manager
+class ActivityLogManager:
+    def __init__(self, activity_log: ActivityLogBase):
+        self.activity_log = activity_log
 
 # Company Manager
 
@@ -52,6 +64,36 @@ class CompanyManager:
     async def delete_companies(self):
         return await delete_companies_db()
 
+# Counterparty Manager
+# TODO: Implement Counterparty Manager
+class CounterpartyManager:
+    def __init__(self, counterparty: CounterpartyBase):
+        self.counterparty = counterparty
+
+# Trade Manager
+# TODO: Implement Trade Manager
+class TradeManager:
+    def __init__(self, trade: TradeBase):
+        self.trade = trade
+
+# Trade Cost Manager
+# TODO: Implement Trade Cost Manager
+class TradeCostManager:
+    def __init__(self, trade_cost: TradeCostBase):
+        self.trade_cost = trade_cost
+
+# Brokerage Deal Manager
+# TODO: Implement Brokerage Deal Manager
+class BrokerageDealManager:
+    def __init__(self, brokerage_deal: BrokerageDealBase):
+        self.brokerage_deal = brokerage_deal
+
+# Shipment Manager
+# TODO: Implement Shipment Manager
+class ShipmentManager:
+    def __init__(self, shipment: ShipmentBase):
+        self.shipment = shipment
+
 # Shareholder Manager
 
 class ShareholderManager:
@@ -76,11 +118,39 @@ class ShareholderManager:
     async def delete_shareholders(self):
         return await delete_shareholders_db()
 
-# def get_trades():
-#     response = supabase.table("trades").select("*").execute()
-#     return response.data
+# Equity Round Manager
 
+class EquityRoundManager:
+    def __init__(self, equity_round: EquityRoundBase):
+        self.equity_round = equity_round
 
-# def create_trade(trade_data: dict):
-#     response = supabase.table("trades").insert(trade_data).execute()
-#     return response.data
+    async def get_equity_rounds(self):
+        return await get_equity_rounds_db()
+
+    async def get_equity_round(self, equity_round_id: UUID):
+        return await get_equity_round_db(equity_round_id)
+
+    async def add_equity_round(self):
+        return await add_equity_round_db(self.equity_round)
+
+    async def update_equity_round(self, equity_round_id: UUID):
+        return await update_equity_round_db(self.equity_round, equity_round_id)
+
+    async def delete_equity_round(self, equity_round_id: UUID):
+        return await delete_equity_round_db(equity_round_id)
+
+    async def delete_equity_rounds(self):
+        return await delete_equity_rounds_db()
+        
+# Share Transaction Manager
+# TODO: Implement Share Transaction Manager
+class ShareTransactionManager:
+    def __init__(self, share_transaction: ShareTransactionBase):
+        self.share_transaction = share_transaction
+
+    def shares_calculation(self):
+        if self.equity_round.pre_money_valuation:
+            self.equity_round.post_money_valuation = self.equity_round.pre_money_valuation + self.equity_round.total_raised
+        if self.equity_round.post_money_valuation:
+            self.equity_round.pre_money_valuation = self.equity_round.post_money_valuation - self.equity_round.total_raised
+        pass
