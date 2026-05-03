@@ -25,6 +25,30 @@ from app.db import (
     update_counterparty_db,
     delete_counterparty_db,
     delete_counterparties_db,
+    get_trades_db,
+    get_trade_db,
+    add_trade_db,
+    update_trade_db,
+    delete_trade_db,
+    delete_trades_db,
+    get_trade_costs_db,
+    get_trade_cost_db,
+    add_trade_cost_db,
+    update_trade_cost_db,
+    delete_trade_cost_db,
+    delete_trade_costs_db,
+    get_brokerage_deals_db,
+    get_brokerage_deal_db,
+    add_brokerage_deal_db,
+    update_brokerage_deal_db,
+    delete_brokerage_deal_db,
+    delete_brokerage_deals_db,
+    get_shipments_db,
+    get_shipment_db,
+    add_shipment_db,
+    update_shipment_db,
+    delete_shipment_db,
+    delete_shipments_db,
     get_shareholders_db,
     get_shareholder_db,
     add_shareholder_db,
@@ -36,7 +60,13 @@ from app.db import (
     add_equity_round_db,
     update_equity_round_db,
     delete_equity_round_db,
-    delete_equity_rounds_db
+    delete_equity_rounds_db,
+    get_share_transactions_db,
+    get_share_transaction_db,
+    add_share_transaction_db,
+    update_share_transaction_db,
+    delete_share_transaction_db,
+    delete_share_transactions_db
 )
 from uuid import UUID
 
@@ -71,7 +101,7 @@ class CompanyManager:
         return await delete_companies_db()
 
 # Counterparty Manager
-# TODO: Implement Counterparty Manager
+
 class CounterpartyManager:
     def __init__(self, counterparty: CounterpartyBase):
         self.counterparty = counterparty
@@ -99,6 +129,24 @@ class CounterpartyManager:
 class TradeManager:
     def __init__(self, trade: TradeBase):
         self.trade = trade
+    
+    async def get_trades(self):
+        return await get_trades_db()
+
+    async def get_trade(self, trade_id: UUID):
+        return await get_trade_db(trade_id)
+
+    async def add_trade(self):
+        return await add_trade_db(self.trade)
+    
+    async def update_trade(self, trade_id: UUID):
+        return await update_trade_db(self.trade, trade_id)
+    
+    async def delete_trade(self, trade_id: UUID):
+        return await delete_trade_db(trade_id)
+
+    async def delete_trades(self):
+        return await delete_trades_db()
 
 # Trade Cost Manager
 # TODO: Implement Trade Cost Manager
@@ -106,17 +154,71 @@ class TradeCostManager:
     def __init__(self, trade_cost: TradeCostBase):
         self.trade_cost = trade_cost
 
+    async def get_trade_costs(self):
+        return await get_trade_costs_db()
+
+    async def get_trade_cost(self, trade_cost_id: UUID):
+        return await get_trade_cost_db(trade_cost_id)
+
+    async def add_trade_cost(self):
+        return await add_trade_cost_db(self.trade_cost)
+    
+    async def update_trade_cost(self, trade_cost_id: UUID):
+        return await update_trade_cost_db(self.trade_cost, trade_cost_id)
+    
+    async def delete_trade_cost(self, trade_cost_id: UUID):
+        return await delete_trade_cost_db(trade_cost_id)
+    
+    async def delete_trade_costs(self):
+        return await delete_trade_costs_db()
+
 # Brokerage Deal Manager
 # TODO: Implement Brokerage Deal Manager
 class BrokerageDealManager:
     def __init__(self, brokerage_deal: BrokerageDealBase):
         self.brokerage_deal = brokerage_deal
+    
+    async def get_brokerage_deals(self):
+        return await get_brokerage_deals_db()
+
+    async def get_brokerage_deal(self, brokerage_deal_id: UUID):
+        return await get_brokerage_deal_db(brokerage_deal_id)
+
+    async def add_brokerage_deal(self):
+        return await add_brokerage_deal_db(self.brokerage_deal)
+    
+    async def update_brokerage_deal(self, brokerage_deal_id: UUID):
+        return await update_brokerage_deal_db(self.brokerage_deal, brokerage_deal_id)
+    
+    async def delete_brokerage_deal(self, brokerage_deal_id: UUID):
+        return await delete_brokerage_deal_db(brokerage_deal_id)
+    
+    async def delete_brokerage_deals(self):
+        return await delete_brokerage_deals_db()
 
 # Shipment Manager
 # TODO: Implement Shipment Manager
 class ShipmentManager:
     def __init__(self, shipment: ShipmentBase):
         self.shipment = shipment
+
+    async def get_shipments(self):
+        return await get_shipments_db()
+
+    async def get_shipment(self, shipment_id: UUID):
+        return await get_shipment_db(shipment_id)
+
+    async def add_shipment(self):
+        return await add_shipment_db(self.shipment)
+    
+    async def update_shipment(self, shipment_id: UUID):
+        return await update_shipment_db(self.shipment, shipment_id)
+    
+    async def delete_shipment(self, shipment_id: UUID):
+        return await delete_shipment_db(shipment_id)
+    
+    async def delete_shipments(self):
+        return await delete_shipments_db()
 
 # Shareholder Manager
 
@@ -178,3 +280,21 @@ class ShareTransactionManager:
         if self.equity_round.post_money_valuation:
             self.equity_round.pre_money_valuation = self.equity_round.post_money_valuation - self.equity_round.total_raised
         pass
+
+    async def get_share_transactions(self):
+        return await get_share_transactions_db()
+
+    async def get_share_transaction(self, share_transaction_id: UUID):
+        return await get_share_transaction_db(share_transaction_id)
+
+    async def add_share_transaction(self):
+        return await add_share_transaction_db(self.share_transaction)
+    
+    async def update_share_transaction(self, share_transaction_id: UUID):
+        return await update_share_transaction_db(self.share_transaction, share_transaction_id)
+    
+    async def delete_share_transaction(self, share_transaction_id: UUID):
+        return await delete_share_transaction_db(share_transaction_id)
+
+    async def delete_share_transactions(self):
+        return await delete_share_transactions_db()

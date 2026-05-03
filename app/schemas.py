@@ -68,21 +68,21 @@ class TradeBase(BaseModel):
     sale_pricing_formula: Optional[str] = None
     expected_purchase_value: Optional[float] = None
     expected_sale_value: Optional[float] = None
-    status: Optional[str] = None
+    status: Optional[str] = "draft" # 'draft', 'negotiation', 'contracted', 'in_transit', 'delivered', 'settled', 'cancelled', 'disputed'
     trade_date: Optional[date] = None
     expected_shipment_date: Optional[date] = None
     expected_delivery_date: Optional[date] = None
     expected_payment_date: Optional[date] = None
     notes: Optional[str] = None
-    created_by: Optional[UUID] = None
-    created_at: Optional[date] = None
-    updated_at: Optional[date] = None
+    # created_by: Optional[UUID] = None
+    # created_at: Optional[date] = None
+    # updated_at: Optional[date] = None
 
 # Trade Cost Schema
 
 class TradeCostBase(BaseModel):
     trade_id: Optional[UUID] = None
-    cost_type: Optional[str] = None
+    cost_type: Optional[str] = "miscellaneous" # 'freight', 'insurance', 'assay', 'customs', 'warehouse', 'port_charges', 'trucking', 'financing', 'legal', 'brokerage', 'tax', 'inspection', 'miscellaneous'
     vendor_id: Optional[UUID] = None
     description: Optional[str] = None
     amount: Optional[float] = None
@@ -117,13 +117,13 @@ class BrokerageDealBase(BaseModel):
     commission_rate: Optional[float] = None
     commission_amount: Optional[float] = None
     payment_trigger: Optional[str] = None
-    status: Optional[str] = None
+    status: Optional[str] = "lead" # 'lead', 'negotiation', 'mandate_signed', 'contracted', 'completed', 'commission_invoiced', 'commission_paid', 'cancelled', 'disputed'
     trade_date: Optional[date] = None
     expected_commission_date: Optional[date] = None
     notes: Optional[str] = None
-    created_by: Optional[UUID] = None
-    created_at: Optional[date] = None
-    updated_at: Optional[date] = None
+    # created_by: Optional[UUID] = None
+    # created_at: Optional[date] = None
+    # updated_at: Optional[date] = None
 
 # Shipment Schema
 
