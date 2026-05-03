@@ -89,6 +89,56 @@ async def delete_companies():
     except Exception as e:
         raise e
 
+# Counterparty Routers
+
+@router.get("/counterparties", tags=["Counterparties"])
+async def get_counterparties():
+    try:
+        manager = CounterpartyManager(None)
+        return await manager.get_counterparties()
+    except Exception as e:
+        raise e
+
+@router.get("/counterparties/{counterparty_id}", tags=["Counterparties"])
+async def get_counterparty(counterparty_id: UUID):
+    try:
+        manager = CounterpartyManager(None)
+        return await manager.get_counterparty(counterparty_id)
+    except Exception as e:
+        raise e
+
+@router.post("/add_counterparty", tags=["Counterparties"])
+async def add_counterparty(counterparty: CounterpartyBase):
+    try:
+        manager = CounterpartyManager(counterparty)
+        return await manager.add_counterparty()
+    except Exception as e:
+        raise e
+
+@router.put("/update_counterparty/{counterparty_id}", tags=["Counterparties"])
+async def update_counterparty(counterparty_id: UUID, counterparty: CounterpartyBase):
+    try:
+        manager = CounterpartyManager(counterparty)
+        return await manager.update_counterparty(counterparty_id)
+    except Exception as e:
+        raise e
+
+@router.delete("/delete_counterparty/{counterparty_id}", tags=["Counterparties"])
+async def delete_counterparty(counterparty_id: UUID):
+    try:
+        manager = CounterpartyManager(None)
+        return await manager.delete_counterparty(counterparty_id)
+    except Exception as e:
+        raise e
+
+@router.delete("/delete_counterparties", tags=["Counterparties"])
+async def delete_counterparties():
+    try:
+        manager = CounterpartyManager(None)
+        return await manager.delete_counterparties()
+    except Exception as e:
+        raise e
+
 # Shareholder Routers
 
 @router.get("/shareholders", tags=["Shareholders"])

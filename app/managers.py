@@ -19,6 +19,12 @@ from app.db import (
     update_company_db,
     delete_company_db,
     delete_companies_db,
+    get_counterparties_db,
+    get_counterparty_db,
+    add_counterparty_db,
+    update_counterparty_db,
+    delete_counterparty_db,
+    delete_counterparties_db,
     get_shareholders_db,
     get_shareholder_db,
     add_shareholder_db,
@@ -69,6 +75,24 @@ class CompanyManager:
 class CounterpartyManager:
     def __init__(self, counterparty: CounterpartyBase):
         self.counterparty = counterparty
+    
+    async def get_counterparties(self):
+        return await get_counterparties_db()
+
+    async def get_counterparty(self, counterparty_id: UUID):
+        return await get_counterparty_db(counterparty_id)
+
+    async def add_counterparty(self):
+        return await add_counterparty_db(self.counterparty)
+    
+    async def update_counterparty(self, counterparty_id: UUID):
+        return await update_counterparty_db(self.counterparty, counterparty_id)
+    
+    async def delete_counterparty(self, counterparty_id: UUID):
+        return await delete_counterparty_db(counterparty_id)
+    
+    async def delete_counterparties(self):
+        return await delete_counterparties_db()
 
 # Trade Manager
 # TODO: Implement Trade Manager
