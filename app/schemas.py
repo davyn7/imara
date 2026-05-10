@@ -25,6 +25,19 @@ class CompanyBase(BaseModel):
     registration_number: Optional[str] = None
     base_currency: Optional[str] = None
 
+# Bank Account Schema
+
+class BankAccountBase(BaseModel):
+    company_id: Optional[UUID] = None
+    bank_name: Optional[str] = None
+    account_name: Optional[str] = None
+    account_number: Optional[str] = None
+    currency: Optional[str] = None
+    country: Optional[str] = None
+    opening_balance: Optional[float] = None
+    current_balance: Optional[float] = None
+    notes: Optional[str] = None
+
 # Counterparty Schema
 
 class CounterpartyBase(BaseModel):

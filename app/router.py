@@ -4,6 +4,7 @@ from fastapi import APIRouter
 from app.managers import (
     ActivityLogManager,
     CompanyManager,
+    BankAccountManager,
     CounterpartyManager,
     TradeManager,
     TradeCostManager,
@@ -16,6 +17,7 @@ from app.managers import (
 from app.schemas import (
     ActivityLogBase,
     CompanyBase,
+    BankAccountBase,
     CounterpartyBase,
     TradeBase,
     TradeCostBase,
@@ -86,6 +88,56 @@ async def delete_companies():
     try:
         manager = CompanyManager(None)
         return await manager.delete_companies()
+    except Exception as e:
+        raise e
+
+# Bank Account Routers
+
+@router.get("/bank_accounts", tags=["Bank Accounts"])
+async def get_bank_accounts():
+    try:
+        manager = BankAccountManager(None)
+        return await manager.get_bank_accounts()
+    except Exception as e:
+        raise e
+
+@router.get("/bank_accounts/{bank_account_id}", tags=["Bank Accounts"])
+async def get_bank_account(bank_account_id: UUID):
+    try:
+        manager = BankAccountManager(None)
+        return await manager.get_bank_account(bank_account_id)
+    except Exception as e:
+        raise e
+
+@router.post("/add_bank_account", tags=["Bank Accounts"])
+async def add_bank_account(bank_account: BankAccountBase):
+    try:
+        manager = BankAccountManager(bank_account)
+        return await manager.add_bank_account()
+    except Exception as e:
+        raise e
+
+@router.put("/update_bank_account/{bank_account_id}", tags=["Bank Accounts"])
+async def update_bank_account(bank_account_id: UUID, bank_account: BankAccountBase):
+    try:
+        manager = BankAccountManager(bank_account)
+        return await manager.update_bank_account(bank_account_id)
+    except Exception as e:
+        raise e
+
+@router.delete("/delete_bank_account/{bank_account_id}", tags=["Bank Accounts"])
+async def delete_bank_account(bank_account_id: UUID):
+    try:
+        manager = BankAccountManager(None)
+        return await manager.delete_bank_account(bank_account_id)
+    except Exception as e:
+        raise e
+
+@router.delete("/delete_bank_accounts", tags=["Bank Accounts"])
+async def delete_bank_accounts():
+    try:
+        manager = BankAccountManager(None)
+        return await manager.delete_bank_accounts()
     except Exception as e:
         raise e
 

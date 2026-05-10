@@ -2,6 +2,7 @@ from app.connection import supabase
 from app.schemas import (
     ActivityLogBase,
     CompanyBase,
+    BankAccountBase,
     CounterpartyBase,
     TradeBase,
     TradeCostBase,
@@ -40,6 +41,34 @@ async def delete_company_db(company_id: UUID):
 async def delete_companies_db():
     response = supabase.table("companies").delete().neq("id", "00000000-0000-0000-0000-000000000000").execute()
     return response.data   
+
+# Bank Account DB Operations
+
+async def get_bank_accounts_db():
+    response = supabase.table("bank_accounts").select("*").execute()
+    return response.data
+
+async def get_bank_account_db(bank_account_id: UUID):
+    response = supabase.table("bank_accounts").select("*").eq("id", bank_account_id).execute()
+    return response.data
+
+async def add_bank_account_db(bank_account: BankAccountBase):
+    bank_account_data = bank_account.model_dump(mode="json")
+    response = supabase.table("bank_accounts").insert(bank_account_data).execute()
+    return response.data
+
+async def update_bank_account_db(bank_account: BankAccountBase, bank_account_id: UUID):
+    bank_account_data = bank_account.model_dump(mode="json", exclude_unset=True)
+    response = supabase.table("bank_accounts").update(bank_account_data).eq("id", bank_account_id).execute()
+    return response.data
+
+async def delete_bank_account_db(bank_account_id: UUID):
+    response = supabase.table("bank_accounts").delete().eq("id", bank_account_id).execute()
+    return response.data
+
+async def delete_bank_accounts_db():
+    response = supabase.table("bank_accounts").delete().neq("id", "00000000-0000-0000-0000-000000000000").execute()
+    return response.data
 
 # Counterparty DB Operations
 

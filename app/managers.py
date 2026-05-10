@@ -3,6 +3,7 @@
 from app.schemas import (
     ActivityLogBase,
     CompanyBase,
+    BankAccountBase,
     CounterpartyBase,
     TradeBase,
     TradeCostBase,
@@ -19,6 +20,12 @@ from app.db import (
     update_company_db,
     delete_company_db,
     delete_companies_db,
+    get_bank_accounts_db,
+    get_bank_account_db,
+    add_bank_account_db,
+    update_bank_account_db,
+    delete_bank_account_db,
+    delete_bank_accounts_db,
     get_counterparties_db,
     get_counterparty_db,
     add_counterparty_db,
@@ -99,6 +106,30 @@ class CompanyManager:
 
     async def delete_companies(self):
         return await delete_companies_db()
+
+# Bank Account Manager
+
+class BankAccountManager:
+    def __init__(self, bank_account: BankAccountBase):
+        self.bank_account = bank_account
+    
+    async def get_bank_accounts(self):
+        return await get_bank_accounts_db()
+
+    async def get_bank_account(self, bank_account_id: UUID):
+        return await get_bank_account_db(bank_account_id)
+
+    async def add_bank_account(self):
+        return await add_bank_account_db(self.bank_account)
+    
+    async def update_bank_account(self, bank_account_id: UUID):
+        return await update_bank_account_db(self.bank_account, bank_account_id)
+    
+    async def delete_bank_account(self, bank_account_id: UUID):
+        return await delete_bank_account_db(bank_account_id)
+    
+    async def delete_bank_accounts(self):
+        return await delete_bank_accounts_db()
 
 # Counterparty Manager
 

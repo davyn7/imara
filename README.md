@@ -52,15 +52,17 @@ Some
 
 #### Creating a new trade
 * Function: `add_trade_ext()`, Router [POST]: `/add_trade_ext`
-* To create a new trade, there must be a seller and buyer that has been inputted into the 
+* To create a new trade, there must be a seller and buyer that has been inputted into the s
 
 #### Creating a new shareholder
 * Function: `add_shareholder_ext()`, Router [POST]: `/add_shareholder_ext`
 * Parameters:
     * `shareholder: ShareholderBase`
     * `add_type: str`, either _basic_ or _fundraise_
-* Check if `shareholder` is in `Counterparties`
-* If `add_type` is _basic_
+* If `add_type` is _basic_:
+    * Call `add_shareholder` API
+* If `add_type` is _fundraise_:
+    * Calculate number of shares
 Must check if shareholder is in counterparty -> Maybe check by name?  
 If yes, then add shareholder as per normal  
 If not, then add counterparty, label as investor, and then add shareholder to DB
