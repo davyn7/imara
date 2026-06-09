@@ -29,21 +29,21 @@ from app.schemas import (
 )
 from uuid import UUID
 
-router = APIRouter()
+router = APIRouter(prefix="/refactor", tags=["Refactor"])
 
 # Initialize DB Testing
 
-@router.post("/populate", tags=["Testing"])
+@router.post("/populate")
 async def populate():
     pass
 
-@router.delete("/clear", tags=["Testing"])
+@router.delete("/clear")
 async def clear():
     pass
 
 # Company Routers
 
-@router.get("/companies", tags=["Companies"])
+@router.get("/companies")
 async def get_companies():
     try:
         manager = CompanyManager(None)
@@ -51,7 +51,7 @@ async def get_companies():
     except Exception as e:
         raise e
 
-@router.get("/companies/{company_id}", tags=["Companies"])
+@router.get("/companies/{company_id}")
 async def get_company(company_id: UUID):
     try:
         manager = CompanyManager(None)
@@ -59,7 +59,7 @@ async def get_company(company_id: UUID):
     except Exception as e:
         raise e
 
-@router.post("/add_company", tags=["Companies"])
+@router.post("/add_company")
 async def add_company(company: CompanyBase):
     try:
         manager = CompanyManager(company)
@@ -67,7 +67,7 @@ async def add_company(company: CompanyBase):
     except Exception as e:
         raise e
 
-@router.put("/update_company/{company_id}", tags=["Companies"])
+@router.put("/update_company/{company_id}")
 async def update_company(company_id: UUID, company: CompanyBase):
     try:
         manager = CompanyManager(company)
@@ -75,7 +75,7 @@ async def update_company(company_id: UUID, company: CompanyBase):
     except Exception as e:
         raise e
 
-@router.delete("/delete_company/{company_id}", tags=["Companies"])
+@router.delete("/delete_company/{company_id}")
 async def delete_company(company_id: UUID):
     try:
         manager = CompanyManager(None)
@@ -83,7 +83,7 @@ async def delete_company(company_id: UUID):
     except Exception as e:
         raise e
 
-@router.delete("/delete_companies", tags=["Companies"])
+@router.delete("/delete_companies")
 async def delete_companies():
     try:
         manager = CompanyManager(None)
@@ -93,7 +93,7 @@ async def delete_companies():
 
 # Bank Account Routers
 
-@router.get("/bank_accounts", tags=["Bank Accounts"])
+@router.get("/bank_accounts")
 async def get_bank_accounts():
     try:
         manager = BankAccountManager(None)
@@ -101,7 +101,7 @@ async def get_bank_accounts():
     except Exception as e:
         raise e
 
-@router.get("/bank_accounts/{bank_account_id}", tags=["Bank Accounts"])
+@router.get("/bank_accounts/{bank_account_id}")
 async def get_bank_account(bank_account_id: UUID):
     try:
         manager = BankAccountManager(None)
@@ -109,7 +109,7 @@ async def get_bank_account(bank_account_id: UUID):
     except Exception as e:
         raise e
 
-@router.post("/add_bank_account", tags=["Bank Accounts"])
+@router.post("/add_bank_account")
 async def add_bank_account(bank_account: BankAccountBase):
     try:
         manager = BankAccountManager(bank_account)
@@ -117,7 +117,7 @@ async def add_bank_account(bank_account: BankAccountBase):
     except Exception as e:
         raise e
 
-@router.put("/update_bank_account/{bank_account_id}", tags=["Bank Accounts"])
+@router.put("/update_bank_account/{bank_account_id}")
 async def update_bank_account(bank_account_id: UUID, bank_account: BankAccountBase):
     try:
         manager = BankAccountManager(bank_account)
@@ -125,7 +125,7 @@ async def update_bank_account(bank_account_id: UUID, bank_account: BankAccountBa
     except Exception as e:
         raise e
 
-@router.delete("/delete_bank_account/{bank_account_id}", tags=["Bank Accounts"])
+@router.delete("/delete_bank_account/{bank_account_id}")
 async def delete_bank_account(bank_account_id: UUID):
     try:
         manager = BankAccountManager(None)
@@ -133,7 +133,7 @@ async def delete_bank_account(bank_account_id: UUID):
     except Exception as e:
         raise e
 
-@router.delete("/delete_bank_accounts", tags=["Bank Accounts"])
+@router.delete("/delete_bank_accounts")
 async def delete_bank_accounts():
     try:
         manager = BankAccountManager(None)
@@ -143,7 +143,7 @@ async def delete_bank_accounts():
 
 # Counterparty Routers
 
-@router.get("/counterparties", tags=["Counterparties"])
+@router.get("/counterparties")
 async def get_counterparties():
     try:
         manager = CounterpartyManager(None)
@@ -151,7 +151,7 @@ async def get_counterparties():
     except Exception as e:
         raise e
 
-@router.get("/counterparties/{counterparty_id}", tags=["Counterparties"])
+@router.get("/counterparties/{counterparty_id}")
 async def get_counterparty(counterparty_id: UUID):
     try:
         manager = CounterpartyManager(None)
@@ -159,7 +159,7 @@ async def get_counterparty(counterparty_id: UUID):
     except Exception as e:
         raise e
 
-@router.post("/add_counterparty", tags=["Counterparties"])
+@router.post("/add_counterparty")
 async def add_counterparty(counterparty: CounterpartyBase):
     try:
         manager = CounterpartyManager(counterparty)
@@ -167,7 +167,7 @@ async def add_counterparty(counterparty: CounterpartyBase):
     except Exception as e:
         raise e
 
-@router.put("/update_counterparty/{counterparty_id}", tags=["Counterparties"])
+@router.put("/update_counterparty/{counterparty_id}")
 async def update_counterparty(counterparty_id: UUID, counterparty: CounterpartyBase):
     try:
         manager = CounterpartyManager(counterparty)
@@ -175,7 +175,7 @@ async def update_counterparty(counterparty_id: UUID, counterparty: CounterpartyB
     except Exception as e:
         raise e
 
-@router.delete("/delete_counterparty/{counterparty_id}", tags=["Counterparties"])
+@router.delete("/delete_counterparty/{counterparty_id}")
 async def delete_counterparty(counterparty_id: UUID):
     try:
         manager = CounterpartyManager(None)
@@ -183,7 +183,7 @@ async def delete_counterparty(counterparty_id: UUID):
     except Exception as e:
         raise e
 
-@router.delete("/delete_counterparties", tags=["Counterparties"])
+@router.delete("/delete_counterparties")
 async def delete_counterparties():
     try:
         manager = CounterpartyManager(None)
@@ -193,7 +193,7 @@ async def delete_counterparties():
 
 # Trade Routers
 
-@router.get("/trades", tags=["Trades"])
+@router.get("/trades")
 async def get_trades():
     try:
         manager = TradeManager(None)
@@ -201,7 +201,7 @@ async def get_trades():
     except Exception as e:
         raise e
 
-@router.get("/trades/{trade_id}", tags=["Trades"])
+@router.get("/trades/{trade_id}")
 async def get_trade(trade_id: UUID):
     try:
         manager = TradeManager(None)
@@ -209,7 +209,7 @@ async def get_trade(trade_id: UUID):
     except Exception as e:
         raise e
 
-@router.post("/add_trade", tags=["Trades"])
+@router.post("/add_trade")
 async def add_trade(trade: TradeBase):
     try:
         manager = TradeManager(trade)
@@ -217,7 +217,7 @@ async def add_trade(trade: TradeBase):
     except Exception as e:
         raise e
 
-@router.put("/update_trade/{trade_id}", tags=["Trades"])
+@router.put("/update_trade/{trade_id}")
 async def update_trade(trade_id: UUID, trade: TradeBase):
     try:
         manager = TradeManager(trade)
@@ -225,7 +225,7 @@ async def update_trade(trade_id: UUID, trade: TradeBase):
     except Exception as e:
         raise e
 
-@router.delete("/delete_trade/{trade_id}", tags=["Trades"])
+@router.delete("/delete_trade/{trade_id}")
 async def delete_trade(trade_id: UUID):
     try:
         manager = TradeManager(None)
@@ -233,7 +233,7 @@ async def delete_trade(trade_id: UUID):
     except Exception as e:
         raise e
 
-@router.delete("/delete_trades", tags=["Trades"])
+@router.delete("/delete_trades")
 async def delete_trades():
     try:
         manager = TradeManager(None)
@@ -243,7 +243,7 @@ async def delete_trades():
 
 # Trade Cost Routers
 
-@router.get("/trade_costs", tags=["Trade Costs"])
+@router.get("/trade_costs")
 async def get_trade_costs():
     try:
         manager = TradeCostManager(None)
@@ -251,7 +251,7 @@ async def get_trade_costs():
     except Exception as e:
         raise e
 
-@router.get("/trade_costs/{trade_cost_id}", tags=["Trade Costs"])
+@router.get("/trade_costs/{trade_cost_id}")
 async def get_trade_cost(trade_cost_id: UUID):
     try:
         manager = TradeCostManager(None)
@@ -259,7 +259,7 @@ async def get_trade_cost(trade_cost_id: UUID):
     except Exception as e:
         raise e
 
-@router.post("/add_trade_cost", tags=["Trade Costs"])
+@router.post("/add_trade_cost")
 async def add_trade_cost(trade_cost: TradeCostBase):
     try:
         manager = TradeCostManager(trade_cost)
@@ -267,7 +267,7 @@ async def add_trade_cost(trade_cost: TradeCostBase):
     except Exception as e:
         raise e
 
-@router.put("/update_trade_cost/{trade_cost_id}", tags=["Trade Costs"])
+@router.put("/update_trade_cost/{trade_cost_id}")
 async def update_trade_cost(trade_cost_id: UUID, trade_cost: TradeCostBase):
     try:
         manager = TradeCostManager(trade_cost)
@@ -275,7 +275,7 @@ async def update_trade_cost(trade_cost_id: UUID, trade_cost: TradeCostBase):
     except Exception as e:
         raise e
 
-@router.delete("/delete_trade_cost/{trade_cost_id}", tags=["Trade Costs"])
+@router.delete("/delete_trade_cost/{trade_cost_id}")
 async def delete_trade_cost(trade_cost_id: UUID):
     try:
         manager = TradeCostManager(None)
@@ -283,7 +283,7 @@ async def delete_trade_cost(trade_cost_id: UUID):
     except Exception as e:
         raise e
 
-@router.delete("/delete_trade_costs", tags=["Trade Costs"])
+@router.delete("/delete_trade_costs")
 async def delete_trade_costs():
     try:
         manager = TradeCostManager(None)
@@ -293,7 +293,7 @@ async def delete_trade_costs():
 
 # Brokerage Deal Routers
 
-@router.get("/brokerage_deals", tags=["Brokerage Deals"])
+@router.get("/brokerage_deals")
 async def get_brokerage_deals():
     try:
         manager = BrokerageDealManager(None)
@@ -301,7 +301,7 @@ async def get_brokerage_deals():
     except Exception as e:
         raise e
 
-@router.get("/brokerage_deals/{brokerage_deal_id}", tags=["Brokerage Deals"])
+@router.get("/brokerage_deals/{brokerage_deal_id}")
 async def get_brokerage_deal(brokerage_deal_id: UUID):
     try:
         manager = BrokerageDealManager(None)
@@ -309,7 +309,7 @@ async def get_brokerage_deal(brokerage_deal_id: UUID):
     except Exception as e:
         raise e
 
-@router.post("/add_brokerage_deal", tags=["Brokerage Deals"])
+@router.post("/add_brokerage_deal")
 async def add_brokerage_deal(brokerage_deal: BrokerageDealBase):
     try:
         manager = BrokerageDealManager(brokerage_deal)
@@ -317,7 +317,7 @@ async def add_brokerage_deal(brokerage_deal: BrokerageDealBase):
     except Exception as e:
         raise e
 
-@router.put("/update_brokerage_deal/{brokerage_deal_id}", tags=["Brokerage Deals"])
+@router.put("/update_brokerage_deal/{brokerage_deal_id}")
 async def update_brokerage_deal(brokerage_deal_id: UUID, brokerage_deal: BrokerageDealBase):
     try:
         manager = BrokerageDealManager(brokerage_deal)
@@ -325,7 +325,7 @@ async def update_brokerage_deal(brokerage_deal_id: UUID, brokerage_deal: Brokera
     except Exception as e:
         raise e
 
-@router.delete("/delete_brokerage_deal/{brokerage_deal_id}", tags=["Brokerage Deals"])
+@router.delete("/delete_brokerage_deal/{brokerage_deal_id}")
 async def delete_brokerage_deal(brokerage_deal_id: UUID):
     try:
         manager = BrokerageDealManager(None)
@@ -333,7 +333,7 @@ async def delete_brokerage_deal(brokerage_deal_id: UUID):
     except Exception as e:
         raise e
 
-@router.delete("/delete_brokerage_deals", tags=["Brokerage Deals"])
+@router.delete("/delete_brokerage_deals")
 async def delete_brokerage_deals():
     try:
         manager = BrokerageDealManager(None)
@@ -343,7 +343,7 @@ async def delete_brokerage_deals():
 
 # Shipment Routers
 
-@router.get("/shipments", tags=["Shipments"])
+@router.get("/shipments")
 async def get_shipments():
     try:
         manager = ShipmentManager(None)
@@ -351,7 +351,7 @@ async def get_shipments():
     except Exception as e:
         raise e
 
-@router.get("/shipments/{shipment_id}", tags=["Shipments"])
+@router.get("/shipments/{shipment_id}")
 async def get_shipment(shipment_id: UUID):
     try:
         manager = ShipmentManager(None)
@@ -359,7 +359,7 @@ async def get_shipment(shipment_id: UUID):
     except Exception as e:
         raise e
 
-@router.post("/add_shipment", tags=["Shipments"])
+@router.post("/add_shipment")
 async def add_shipment(shipment: ShipmentBase):
     try:
         manager = ShipmentManager(shipment)
@@ -367,7 +367,7 @@ async def add_shipment(shipment: ShipmentBase):
     except Exception as e:
         raise e
 
-@router.put("/update_shipment/{shipment_id}", tags=["Shipments"])
+@router.put("/update_shipment/{shipment_id}")
 async def update_shipment(shipment_id: UUID, shipment: ShipmentBase):
     try:
         manager = ShipmentManager(shipment)
@@ -375,7 +375,7 @@ async def update_shipment(shipment_id: UUID, shipment: ShipmentBase):
     except Exception as e:
         raise e
 
-@router.delete("/delete_shipment/{shipment_id}", tags=["Shipments"])
+@router.delete("/delete_shipment/{shipment_id}")
 async def delete_shipment(shipment_id: UUID):
     try:
         manager = ShipmentManager(None)
@@ -383,7 +383,7 @@ async def delete_shipment(shipment_id: UUID):
     except Exception as e:
         raise e
 
-@router.delete("/delete_shipments", tags=["Shipments"])
+@router.delete("/delete_shipments")
 async def delete_shipments():
     try:
         manager = ShipmentManager(None)
@@ -393,7 +393,7 @@ async def delete_shipments():
 
 # Shareholder Routers
 
-@router.get("/shareholders", tags=["Shareholders"])
+@router.get("/shareholders")
 async def get_shareholders():
     try:
         manager = ShareholderManager(None)
@@ -401,7 +401,7 @@ async def get_shareholders():
     except Exception as e:
         raise e
 
-@router.get("/shareholders/{shareholder_id}", tags=["Shareholders"])
+@router.get("/shareholders/{shareholder_id}")
 async def get_shareholder(shareholder_id: UUID):
     try:
         manager = ShareholderManager(None)
@@ -409,7 +409,7 @@ async def get_shareholder(shareholder_id: UUID):
     except Exception as e:
         raise e
 
-@router.post("/add_shareholder", tags=["Shareholders"])
+@router.post("/add_shareholder")
 async def add_shareholder(shareholder: ShareholderBase):
     try:
         manager = ShareholderManager(shareholder)
@@ -417,7 +417,7 @@ async def add_shareholder(shareholder: ShareholderBase):
     except Exception as e:
         raise e
 
-@router.put("/update_shareholder/{shareholder_id}", tags=["Shareholders"])
+@router.put("/update_shareholder/{shareholder_id}")
 async def update_shareholder(shareholder_id: UUID, shareholder: ShareholderBase):
     try:
         manager = ShareholderManager(shareholder)
@@ -425,7 +425,7 @@ async def update_shareholder(shareholder_id: UUID, shareholder: ShareholderBase)
     except Exception as e:
         raise e
 
-@router.delete("/delete_shareholder/{shareholder_id}", tags=["Shareholders"])
+@router.delete("/delete_shareholder/{shareholder_id}")
 async def delete_shareholder(shareholder_id: UUID):
     try:
         manager = ShareholderManager(None)
@@ -433,7 +433,7 @@ async def delete_shareholder(shareholder_id: UUID):
     except Exception as e:
         raise e
 
-@router.delete("/delete_shareholdes", tags=["Shareholders"])
+@router.delete("/delete_shareholdes")
 async def delete_shareholder():
     try:
         manager = ShareholderManager(None)
@@ -443,7 +443,7 @@ async def delete_shareholder():
 
 # Equity Round Routers
 
-@router.get("/equity_rounds", tags=["Equity Rounds"])
+@router.get("/equity_rounds")
 async def get_equity_rounds():
     try:
         manager = EquityRoundManager(None)
@@ -451,7 +451,7 @@ async def get_equity_rounds():
     except Exception as e:
         raise e
 
-@router.get("/equity_rounds/{equity_round_id}", tags=["Equity Rounds"])
+@router.get("/equity_rounds/{equity_round_id}")
 async def get_equity_round(equity_round_id: UUID):
     try:
         manager = EquityRoundManager(None)
@@ -459,7 +459,7 @@ async def get_equity_round(equity_round_id: UUID):
     except Exception as e:
         raise e
 
-@router.post("/add_equity_round", tags=["Equity Rounds"])
+@router.post("/add_equity_round")
 async def add_equity_round(equity_round: EquityRoundBase):
     try:
         manager = EquityRoundManager(equity_round)
@@ -467,7 +467,7 @@ async def add_equity_round(equity_round: EquityRoundBase):
     except Exception as e:
         raise e
 
-@router.put("/update_equity_round/{equity_round_id}", tags=["Equity Rounds"])
+@router.put("/update_equity_round/{equity_round_id}")
 async def update_equity_round(equity_round_id: UUID, equity_round: EquityRoundBase):
     try:
         manager = EquityRoundManager(equity_round)
@@ -475,7 +475,7 @@ async def update_equity_round(equity_round_id: UUID, equity_round: EquityRoundBa
     except Exception as e:
         raise e
 
-@router.delete("/delete_equity_round/{equity_round_id}", tags=["Equity Rounds"])
+@router.delete("/delete_equity_round/{equity_round_id}")
 async def delete_equity_round(equity_round_id: UUID):
     try:
         manager = EquityRoundManager(None)
@@ -483,7 +483,7 @@ async def delete_equity_round(equity_round_id: UUID):
     except Exception as e:
         raise e
 
-@router.delete("/delete_equity_rounds", tags=["Equity Rounds"])
+@router.delete("/delete_equity_rounds")
 async def delete_equity_rounds():
     try:
         manager = EquityRoundManager(None)
@@ -493,7 +493,7 @@ async def delete_equity_rounds():
 
 # Share Transaction Routers
 
-@router.get("/share_transactions", tags=["Share Transactions"])
+@router.get("/share_transactions")
 async def get_share_transactions():
     try:
         manager = ShareTransactionManager(None)
@@ -501,7 +501,7 @@ async def get_share_transactions():
     except Exception as e:
         raise e
 
-@router.get("/share_transactions/{share_transaction_id}", tags=["Share Transactions"])
+@router.get("/share_transactions/{share_transaction_id}")
 async def get_share_transaction(share_transaction_id: UUID):
     try:
         manager = ShareTransactionManager(None)
@@ -509,7 +509,7 @@ async def get_share_transaction(share_transaction_id: UUID):
     except Exception as e:
         raise e
 
-@router.post("/add_share_transaction", tags=["Share Transactions"])
+@router.post("/add_share_transaction")
 async def add_share_transaction(share_transaction: ShareTransactionBase):
     try:
         manager = ShareTransactionManager(share_transaction)
@@ -517,7 +517,7 @@ async def add_share_transaction(share_transaction: ShareTransactionBase):
     except Exception as e:
         raise e
 
-@router.put("/update_share_transaction/{share_transaction_id}", tags=["Share Transactions"])
+@router.put("/update_share_transaction/{share_transaction_id}")
 async def update_share_transaction(share_transaction_id: UUID, share_transaction: ShareTransactionBase):
     try:
         manager = ShareTransactionManager(share_transaction)
@@ -525,7 +525,7 @@ async def update_share_transaction(share_transaction_id: UUID, share_transaction
     except Exception as e:
         raise e
 
-@router.delete("/delete_share_transaction/{share_transaction_id}", tags=["Share Transactions"])
+@router.delete("/delete_share_transaction/{share_transaction_id}")
 async def delete_share_transaction(share_transaction_id: UUID):
     try:
         manager = ShareTransactionManager(None)
@@ -533,7 +533,7 @@ async def delete_share_transaction(share_transaction_id: UUID):
     except Exception as e:
         raise e
 
-@router.delete("/delete_share_transactions", tags=["Share Transactions"])
+@router.delete("/delete_share_transactions")
 async def delete_share_transactions():
     try:
         manager = ShareTransactionManager(None)
