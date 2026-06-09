@@ -52,7 +52,9 @@ Some
 
 #### Creating a new trade
 * Function: `add_trade_ext()`, Router [POST]: `/add_trade_ext`
-* To create a new trade, there must be a seller and buyer that has been inputted into the s
+* To create a new trade, there must be a seller and buyer that has been inputted into `counterparties`
+* If not, then call the `add_counterparty()` API to add new seller and/or buyer `counterparty`
+*
 
 #### Creating a new shareholder
 * Function: `add_shareholder_ext()`, Router [POST]: `/add_shareholder_ext`
