@@ -1,5 +1,9 @@
 # app/internal/db.py
 
+import calendar
+from collections import defaultdict
+from datetime import date
+
 from app.connection import supabase
 from app.internal.schemas import (
     CompanyBase,
@@ -40,29 +44,29 @@ async def delete_companies_db():
 # Account DB Operations
 
 async def get_accounts_db():
-    response = supabase.table("bank_accounts").select("*").execute()
+    response = supabase.table("accounts").select("*").execute()
     return response.data
 
 async def get_account_db(account_id: int):
-    response = supabase.table("bank_accounts").select("*").eq("id", account_id).execute()
+    response = supabase.table("accounts").select("*").eq("id", account_id).execute()
     return response.data
 
 async def add_account_db(account: AccountBase):
     account_data = account.model_dump(mode="json")
-    response = supabase.table("bank_accounts").insert(account_data).execute()
+    response = supabase.table("accounts").insert(account_data).execute()
     return response.data
 
 async def update_account_db(account: AccountBase, account_id: int):
     account_data = account.model_dump(mode="json", exclude_unset=True)
-    response = supabase.table("bank_accounts").update(account_data).eq("id", account_id).execute()
+    response = supabase.table("accounts").update(account_data).eq("id", account_id).execute()
     return response.data
 
 async def delete_account_db(account_id: int):
-    response = supabase.table("bank_accounts").delete().eq("id", account_id).execute()
+    response = supabase.table("accounts").delete().eq("id", account_id).execute()
     return response.data
 
 async def delete_accounts_db():
-    response = supabase.table("bank_accounts").delete().neq("id", 0).execute()
+    response = supabase.table("accounts").delete().neq("id", 0).execute()
     return response.data
 
 # User DB Operations
@@ -102,6 +106,47 @@ async def get_expenses_db():
 async def get_expense_db(expense_id: int):
     response = supabase.table("expenses").select("*").eq("id", expense_id).execute()
     return response.data
+
+async def get_expenses_by_month_year_db(month: int, year: int):
+    start_date = date(year, month, 1)
+    end_date = date(year, month, calendar.monthrange(year, month)[1])
+    response = (
+        supabase.table("expenses")
+        .select("*")
+        .gte("expense_date", start_date.isoformat())
+        .lte("expense_date", end_date.isoformat())
+        .execute()
+    )
+    return response.data
+
+async def get_expense_total_by_month_year_db(month: int, year: int):
+    start_date = date(year, month, 1)
+    end_date = date(year, month, calendar.monthrange(year, month)[1])
+    response = (
+        supabase.table("expenses")
+        .select("amount")
+        .gte("expense_date", start_date.isoformat())
+        .lte("expense_date", end_date.isoformat())
+        .execute()
+    )
+    total = sum(expense["amount"] for expense in response.data if expense.get("amount") is not None)
+    return {"year": year, "month": month, "total": total}
+
+async def get_monthly_expense_totals_db():
+    response = supabase.table("expenses").select("amount, expense_date").execute()
+    totals = defaultdict(float)
+    for expense in response.data:
+        expense_date = expense.get("expense_date")
+        amount = expense.get("amount")
+        if not expense_date or amount is None:
+            continue
+        year = int(expense_date[:4])
+        month = int(expense_date[5:7])
+        totals[(year, month)] += amount
+    return [
+        {"year": year, "month": month, "total": total}
+        for (year, month), total in sorted(totals.items(), reverse=True)
+    ]
 
 async def add_expense_db(expense: ExpenseBase):
     expense_data = expense.model_dump(mode="json")

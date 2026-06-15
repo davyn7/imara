@@ -1,6 +1,6 @@
 # app/internal/router.py
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 from app.internal.managers import (
     CompanyManager,
     AccountManager,
@@ -174,6 +174,36 @@ async def get_expenses():
     try:
         manager = ExpenseManager(None)
         return await manager.get_expenses()
+    except Exception as e:
+        raise e
+
+@router.get("/expenses/by_month")
+async def get_expenses_by_month(
+    month: int = Query(..., ge=1, le=12),
+    year: int = Query(..., ge=2000, le=2100),
+):
+    try:
+        manager = ExpenseManager(None)
+        return await manager.get_expenses_by_month_year(month, year)
+    except Exception as e:
+        raise e
+
+@router.get("/expenses/total_by_month")
+async def get_expense_total_by_month(
+    month: int = Query(..., ge=1, le=12),
+    year: int = Query(..., ge=2000, le=2100),
+):
+    try:
+        manager = ExpenseManager(None)
+        return await manager.get_expense_total_by_month_year(month, year)
+    except Exception as e:
+        raise e
+
+@router.get("/expenses/monthly_totals")
+async def get_monthly_expense_totals():
+    try:
+        manager = ExpenseManager(None)
+        return await manager.get_monthly_expense_totals()
     except Exception as e:
         raise e
 

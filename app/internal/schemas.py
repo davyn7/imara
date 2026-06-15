@@ -14,12 +14,14 @@ class CompanyBase(BaseModel):
     tax_id: Optional[str] = None
     registration_number: Optional[str] = None
     base_currency: Optional[str] = None
+    address: Optional[str] = None
+    zip_code: Optional[str] = None
 
 # Any Imara-owned bank account
 class AccountBase(BaseModel):
     company_id: Optional[int] = None
+    name: Optional[str] = None
     bank_name: Optional[str] = None
-    account_name: Optional[str] = None
     account_number: Optional[str] = None
     currency: Optional[str] = None
     country: Optional[str] = None
@@ -32,15 +34,15 @@ class AccountBase(BaseModel):
 class UserBase(BaseModel):
     company_id: Optional[int] = None
     name: Optional[str] = None
+    personal_email: Optional[str] = None
     email: Optional[str] = None
     phone: Optional[str] = None
     role: Optional[str] = None
-    notes: Optional[str] = None
     password: Optional[str] = None
     is_admin: Optional[bool] = False
     is_superadmin: Optional[bool] = False
-    is_staff: Optional[bool] = False
-    is_active: Optional[bool] = True
+    is_active: Optional[bool] = False
+    notes: Optional[str] = None
 
 class ExpenseBase(BaseModel):
     company_id: Optional[int] = None
@@ -51,10 +53,10 @@ class ExpenseBase(BaseModel):
     description: Optional[str] = None
     notes: Optional[str] = None
     is_reimbursement: Optional[bool] = False
-    user_id: Optional[int] = None
 
 class ReimbursementBase(BaseModel):
     expense_id: Optional[int] = None
+    user_id: Optional[int] = None
     is_reimbursed: Optional[bool] = False
     reimbursement_date: Optional[date] = None
     notes: Optional[str] = None

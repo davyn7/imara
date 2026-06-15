@@ -28,6 +28,9 @@ from app.internal.db import (
     delete_users_db,
     get_expenses_db,
     get_expense_db,
+    get_expenses_by_month_year_db,
+    get_expense_total_by_month_year_db,
+    get_monthly_expense_totals_db,
     add_expense_db,
     update_expense_db,
     delete_expense_db,
@@ -122,6 +125,15 @@ class ExpenseManager:
 
     async def get_expense(self, expense_id: int):
         return await get_expense_db(expense_id)
+
+    async def get_expenses_by_month_year(self, month: int, year: int):
+        return await get_expenses_by_month_year_db(month, year)
+
+    async def get_expense_total_by_month_year(self, month: int, year: int):
+        return await get_expense_total_by_month_year_db(month, year)
+
+    async def get_monthly_expense_totals(self):
+        return await get_monthly_expense_totals_db()
 
     async def add_expense(self):
         return await add_expense_db(self.expense)
