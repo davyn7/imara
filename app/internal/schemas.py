@@ -45,7 +45,7 @@ class UserBase(BaseModel):
     notes: Optional[str] = None
 
 class ExpenseBase(BaseModel):
-    company_id: Optional[int] = None
+    account_id: Optional[int] = None
     name: Optional[str] = None
     category: Optional[str] = None
     amount: Optional[float] = None

@@ -31,6 +31,12 @@ from app.internal.db import (
     get_expenses_by_month_year_db,
     get_expense_total_by_month_year_db,
     get_monthly_expense_totals_db,
+    get_expenses_by_account_month_year_db,
+    get_expense_total_by_account_month_year_db,
+    get_monthly_expense_totals_by_account_db,
+    get_expenses_by_user_month_year_db,
+    get_expense_total_by_user_month_year_db,
+    get_monthly_expense_totals_by_user_db,
     add_expense_db,
     update_expense_db,
     delete_expense_db,
@@ -39,6 +45,7 @@ from app.internal.db import (
     get_reimbursement_db,
     add_reimbursement_db,
     update_reimbursement_db,
+    mark_reimbursement_reimbursed_db,
     delete_reimbursement_db,
     delete_reimbursements_db
 )
@@ -90,6 +97,15 @@ class AccountManager:
     async def delete_accounts(self):
         return await delete_accounts_db()
 
+    async def get_expenses_by_month_year(self, account_id: int, month: int, year: int):
+        return await get_expenses_by_account_month_year_db(account_id, month, year)
+
+    async def get_expense_total_by_month_year(self, account_id: int, month: int, year: int):
+        return await get_expense_total_by_account_month_year_db(account_id, month, year)
+
+    async def get_monthly_expense_totals(self, account_id: int):
+        return await get_monthly_expense_totals_by_account_db(account_id)
+
 # User Manager
 
 class UserManager:
@@ -113,6 +129,15 @@ class UserManager:
 
     async def delete_users(self):
         return await delete_users_db()
+
+    async def get_expenses_by_month_year(self, user_id: int, month: int, year: int):
+        return await get_expenses_by_user_month_year_db(user_id, month, year)
+
+    async def get_expense_total_by_month_year(self, user_id: int, month: int, year: int):
+        return await get_expense_total_by_user_month_year_db(user_id, month, year)
+
+    async def get_monthly_expense_totals(self, user_id: int):
+        return await get_monthly_expense_totals_by_user_db(user_id)
 
 # Expense Manager
 
@@ -164,6 +189,9 @@ class ReimbursementManager:
 
     async def update_reimbursement(self, reimbursement_id: int):
         return await update_reimbursement_db(self.reimbursement, reimbursement_id)
+
+    async def mark_reimbursement_reimbursed(self, reimbursement_id: int):
+        return await mark_reimbursement_reimbursed_db(reimbursement_id)
 
     async def delete_reimbursement(self, reimbursement_id: int):
         return await delete_reimbursement_db(reimbursement_id)

@@ -117,6 +117,38 @@ async def delete_accounts():
     except Exception as e:
         raise e
 
+@router.get("/accounts/{account_id}/expenses/by_month")
+async def get_account_expenses_by_month(
+    account_id: int,
+    month: int = Query(..., ge=1, le=12),
+    year: int = Query(..., ge=2000, le=2100),
+):
+    try:
+        manager = AccountManager(None)
+        return await manager.get_expenses_by_month_year(account_id, month, year)
+    except Exception as e:
+        raise e
+
+@router.get("/accounts/{account_id}/expenses/total_by_month")
+async def get_account_expense_total_by_month(
+    account_id: int,
+    month: int = Query(..., ge=1, le=12),
+    year: int = Query(..., ge=2000, le=2100),
+):
+    try:
+        manager = AccountManager(None)
+        return await manager.get_expense_total_by_month_year(account_id, month, year)
+    except Exception as e:
+        raise e
+
+@router.get("/accounts/{account_id}/expenses/monthly_totals")
+async def get_account_monthly_expense_totals(account_id: int):
+    try:
+        manager = AccountManager(None)
+        return await manager.get_monthly_expense_totals(account_id)
+    except Exception as e:
+        raise e
+
 # User Routers
 
 @router.get("/users")
@@ -164,6 +196,38 @@ async def delete_users():
     try:
         manager = UserManager(None)
         return await manager.delete_users()
+    except Exception as e:
+        raise e
+
+@router.get("/users/{user_id}/expenses/by_month")
+async def get_user_expenses_by_month(
+    user_id: int,
+    month: int = Query(..., ge=1, le=12),
+    year: int = Query(..., ge=2000, le=2100),
+):
+    try:
+        manager = UserManager(None)
+        return await manager.get_expenses_by_month_year(user_id, month, year)
+    except Exception as e:
+        raise e
+
+@router.get("/users/{user_id}/expenses/total_by_month")
+async def get_user_expense_total_by_month(
+    user_id: int,
+    month: int = Query(..., ge=1, le=12),
+    year: int = Query(..., ge=2000, le=2100),
+):
+    try:
+        manager = UserManager(None)
+        return await manager.get_expense_total_by_month_year(user_id, month, year)
+    except Exception as e:
+        raise e
+
+@router.get("/users/{user_id}/expenses/monthly_totals")
+async def get_user_monthly_expense_totals(user_id: int):
+    try:
+        manager = UserManager(None)
+        return await manager.get_monthly_expense_totals(user_id)
     except Exception as e:
         raise e
 
@@ -278,6 +342,14 @@ async def update_reimbursement(reimbursement_id: int, reimbursement: Reimburseme
     try:
         manager = ReimbursementManager(reimbursement)
         return await manager.update_reimbursement(reimbursement_id)
+    except Exception as e:
+        raise e
+
+@router.put("/mark_reimbursed/{reimbursement_id}")
+async def mark_reimbursement_reimbursed(reimbursement_id: int):
+    try:
+        manager = ReimbursementManager(None)
+        return await manager.mark_reimbursement_reimbursed(reimbursement_id)
     except Exception as e:
         raise e
 
