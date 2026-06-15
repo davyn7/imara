@@ -6,14 +6,14 @@ from app.internal.managers import (
     AccountManager,
     UserManager,
     ExpenseManager,
-    ReimbursementManager,
+    ReimbursementManager
 )
 from app.internal.schemas import (
     CompanyBase,
     AccountBase,
     UserBase,
     ExpenseBase,
-    ReimbursementBase,
+    ReimbursementBase
 )
 router = APIRouter(prefix="/internal", tags=["Internal"])
 

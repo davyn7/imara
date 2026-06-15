@@ -5,7 +5,7 @@ from app.internal.schemas import (
     AccountBase,
     UserBase,
     ExpenseBase,
-    ReimbursementBase,
+    ReimbursementBase
 )
 from app.internal.db import (
     get_companies_db,
@@ -37,7 +37,7 @@ from app.internal.db import (
     add_reimbursement_db,
     update_reimbursement_db,
     delete_reimbursement_db,
-    delete_reimbursements_db,
+    delete_reimbursements_db
 )
 # Company Manager
 

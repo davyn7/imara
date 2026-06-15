@@ -6,7 +6,7 @@ from app.internal.schemas import (
     AccountBase,
     UserBase,
     ExpenseBase,
-    ReimbursementBase,
+    ReimbursementBase
 )
 
 # Company DB Operations
