@@ -5,6 +5,7 @@ from supabase import create_client, Client
 from app.router import router
 from app.activity_logs.router import router as activity_logs_router
 from app.internal.router import router as internal_router
+from app.auth.router import router as auth_router
 from app.treasury.router import router as treasury_router
 from app.financing.router import router as financing_router
 from app.counterparties.router import router as counterparties_router
@@ -16,6 +17,7 @@ app = FastAPI()
 
 app.include_router(activity_logs_router)
 app.include_router(internal_router)
+app.include_router(auth_router)
 app.include_router(treasury_router)
 app.include_router(financing_router)
 app.include_router(counterparties_router)
