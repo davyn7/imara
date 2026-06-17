@@ -1,17 +1,21 @@
 # app/activity_logs/managers.py
 
-# TODO
-# from app.activity_logs.schemas import (
+from app.activity_logs.schemas import ActivityLogBase
+from app.activity_logs.db import (
+    get_activity_logs_db,
+    get_activity_log_db,
+    add_activity_log_db,
+)
 
-# )
-# from app.activity_logs.db import (
+class ActivityLogManager:
+    def __init__(self, activity_log: ActivityLogBase):
+        self.activity_log = activity_log
 
-# )
+    async def get_activity_logs(self):
+        return await get_activity_logs_db()
 
-from uuid import UUID
-from typing import Optional
-import math
-import random
-import string
+    async def get_activity_log(self, activity_log_id: int):
+        return await get_activity_log_db(activity_log_id)
 
-# TODO: Add managers for Activity Logs
+    async def add_activity_log(self):
+        return await add_activity_log_db(self.activity_log)
