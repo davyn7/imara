@@ -11,13 +11,10 @@ from app.financing.router import router as financing_router
 from app.counterparties.router import router as counterparties_router
 from app.trades.router import router as trades_router
 from app.logistics.router import router as logistics_router
-from app.activity_logs.middleware import ActivityLogMiddleware
 
 load_dotenv()
 
 app = FastAPI()
-
-app.add_middleware(ActivityLogMiddleware)
 
 app.include_router(activity_logs_router)
 app.include_router(internal_router)
