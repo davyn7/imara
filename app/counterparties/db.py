@@ -1,7 +1,13 @@
 # app/counterparties/db.py
 
 from app.connection import supabase
-from app.counterparties.schemas import CounterpartyCreate, CounterpartyUpdate, SPABase
+from app.counterparties.schemas import (
+    CounterpartyCreate,
+    CounterpartyUpdate,
+    CounterpartyContactCreate,
+    CounterpartyContactUpdate,
+    SPABase,
+)
 
 
 def _serialize(model) -> dict:
@@ -66,6 +72,51 @@ async def delete_counterparty_db(counterparty_id: int):
 
 async def delete_counterparties_db():
     response = supabase.table("counterparties").delete().neq("id", 0).execute()
+    return response.data
+
+# Counterparty Contact DB Operations
+
+async def get_counterparty_contacts_db(counterparty_id: int):
+    response = (
+        supabase.table("counterparty_contacts")
+        .select("*")
+        .eq("counterparty_id", counterparty_id)
+        .execute()
+    )
+    return response.data
+
+async def get_counterparty_contact_db(contact_id: int):
+    response = (
+        supabase.table("counterparty_contacts")
+        .select("*")
+        .eq("id", contact_id)
+        .execute()
+    )
+    return response.data
+
+async def add_counterparty_contact_db(counterparty_id: int, contact: CounterpartyContactCreate):
+    contact_data = _serialize(contact)
+    contact_data["counterparty_id"] = counterparty_id
+    response = supabase.table("counterparty_contacts").insert(contact_data).execute()
+    return response.data
+
+async def update_counterparty_contact_db(contact: CounterpartyContactUpdate, contact_id: int):
+    contact_data = contact.model_dump(mode="json", exclude_unset=True)
+    response = (
+        supabase.table("counterparty_contacts")
+        .update(contact_data)
+        .eq("id", contact_id)
+        .execute()
+    )
+    return response.data
+
+async def delete_counterparty_contact_db(contact_id: int):
+    response = (
+        supabase.table("counterparty_contacts")
+        .delete()
+        .eq("id", contact_id)
+        .execute()
+    )
     return response.data
 
 # SPA DB Operations

@@ -3,6 +3,8 @@
 from app.counterparties.schemas import (
     CounterpartyCreate,
     CounterpartyUpdate,
+    CounterpartyContactCreate,
+    CounterpartyContactUpdate,
     CounterpartyBase,
     SPABase,
 )
@@ -16,6 +18,11 @@ from app.counterparties.db import (
     update_counterparty_db,
     delete_counterparty_db,
     delete_counterparties_db,
+    get_counterparty_contacts_db,
+    get_counterparty_contact_db,
+    add_counterparty_contact_db,
+    update_counterparty_contact_db,
+    delete_counterparty_contact_db,
     get_spas_db,
     get_spa_db,
     add_spa_db,
@@ -56,6 +63,27 @@ class CounterpartyManager:
 
     async def delete_counterparties(self):
         return await delete_counterparties_db()
+
+# Counterparty Contact Manager
+
+class CounterpartyContactManager:
+    def __init__(self, contact: CounterpartyContactCreate | CounterpartyContactUpdate | None = None):
+        self.contact = contact
+
+    async def get_counterparty_contacts(self, counterparty_id: int):
+        return await get_counterparty_contacts_db(counterparty_id)
+
+    async def get_counterparty_contact(self, contact_id: int):
+        return await get_counterparty_contact_db(contact_id)
+
+    async def add_counterparty_contact(self, counterparty_id: int):
+        return await add_counterparty_contact_db(counterparty_id, self.contact)
+
+    async def update_counterparty_contact(self, contact_id: int):
+        return await update_counterparty_contact_db(self.contact, contact_id)
+
+    async def delete_counterparty_contact(self, contact_id: int):
+        return await delete_counterparty_contact_db(contact_id)
 
 # SPA Manager
 

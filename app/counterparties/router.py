@@ -2,8 +2,9 @@
 
 from fastapi import APIRouter
 from app.counterparties.managers import (
-    CounterpartyManager, 
-    SPAManager
+    CounterpartyManager,
+    CounterpartyContactManager,
+    SPAManager,
 )
 from app.counterparties.schemas import (
     CounterpartyBase, 
@@ -107,22 +108,13 @@ async def delete_counterparty(counterparty_id: int):
 # Counterparty Contacts
 # -------------------------
 
-@router.post("/{counterparty_id}/contacts")
-async def add_counterparty_contact(
-    counterparty_id: int,
-    contact: CounterpartyContactCreate,
-):
-    pass
-
-
-@router.get("/{counterparty_id}/contacts")
-async def get_counterparty_contacts(counterparty_id: int):
-    pass
-
-
 @router.get("/contacts/{contact_id}")
 async def get_counterparty_contact(contact_id: int):
-    pass
+    try:
+        manager = CounterpartyContactManager()
+        return await manager.get_counterparty_contact(contact_id)
+    except Exception as e:
+        raise e
 
 
 @router.patch("/contacts/{contact_id}")
@@ -130,12 +122,41 @@ async def update_counterparty_contact(
     contact_id: int,
     contact: CounterpartyContactUpdate,
 ):
-    pass
+    try:
+        manager = CounterpartyContactManager(contact)
+        return await manager.update_counterparty_contact(contact_id)
+    except Exception as e:
+        raise e
 
 
 @router.delete("/contacts/{contact_id}")
 async def delete_counterparty_contact(contact_id: int):
-    pass
+    try:
+        manager = CounterpartyContactManager()
+        return await manager.delete_counterparty_contact(contact_id)
+    except Exception as e:
+        raise e
+
+
+@router.post("/{counterparty_id}/contacts")
+async def add_counterparty_contact(
+    counterparty_id: int,
+    contact: CounterpartyContactCreate,
+):
+    try:
+        manager = CounterpartyContactManager(contact)
+        return await manager.add_counterparty_contact(counterparty_id)
+    except Exception as e:
+        raise e
+
+
+@router.get("/{counterparty_id}/contacts")
+async def get_counterparty_contacts(counterparty_id: int):
+    try:
+        manager = CounterpartyContactManager()
+        return await manager.get_counterparty_contacts(counterparty_id)
+    except Exception as e:
+        raise e
 
 
 # -------------------------
