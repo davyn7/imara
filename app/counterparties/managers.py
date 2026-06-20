@@ -7,6 +7,8 @@ from app.counterparties.schemas import (
     CounterpartyContactUpdate,
     CounterpartyBankAccountCreate,
     CounterpartyBankAccountUpdate,
+    CounterpartyKYCCreate,
+    CounterpartyKYCUpdate,
     CounterpartyBase,
     SPABase,
 )
@@ -30,6 +32,10 @@ from app.counterparties.db import (
     add_counterparty_bank_account_db,
     update_counterparty_bank_account_db,
     delete_counterparty_bank_account_db,
+    get_counterparty_kyc_db,
+    add_counterparty_kyc_db,
+    update_counterparty_kyc_db,
+    delete_counterparty_kyc_db,
     get_spas_db,
     get_spa_db,
     add_spa_db,
@@ -115,6 +121,24 @@ class CounterpartyBankAccountManager:
 
     async def delete_counterparty_bank_account(self, bank_account_id: int):
         return await delete_counterparty_bank_account_db(bank_account_id)
+
+# Counterparty KYC Manager
+
+class CounterpartyKYCManager:
+    def __init__(self, kyc: CounterpartyKYCCreate | CounterpartyKYCUpdate | None = None):
+        self.kyc = kyc
+
+    async def get_counterparty_kyc(self, counterparty_id: int):
+        return await get_counterparty_kyc_db(counterparty_id)
+
+    async def add_counterparty_kyc(self, counterparty_id: int):
+        return await add_counterparty_kyc_db(counterparty_id, self.kyc)
+
+    async def update_counterparty_kyc(self, kyc_id: int):
+        return await update_counterparty_kyc_db(self.kyc, kyc_id)
+
+    async def delete_counterparty_kyc(self, kyc_id: int):
+        return await delete_counterparty_kyc_db(kyc_id)
 
 # SPA Manager
 

@@ -8,6 +8,8 @@ from app.counterparties.schemas import (
     CounterpartyContactUpdate,
     CounterpartyBankAccountCreate,
     CounterpartyBankAccountUpdate,
+    CounterpartyKYCCreate,
+    CounterpartyKYCUpdate,
     SPABase,
 )
 
@@ -168,6 +170,42 @@ async def delete_counterparty_bank_account_db(bank_account_id: int):
         supabase.table("counterparty_bank_accounts")
         .delete()
         .eq("id", bank_account_id)
+        .execute()
+    )
+    return response.data
+
+# Counterparty KYC DB Operations
+
+async def get_counterparty_kyc_db(counterparty_id: int):
+    response = (
+        supabase.table("counterparty_kyc")
+        .select("*")
+        .eq("counterparty_id", counterparty_id)
+        .execute()
+    )
+    return response.data
+
+async def add_counterparty_kyc_db(counterparty_id: int, kyc: CounterpartyKYCCreate):
+    kyc_data = _serialize(kyc)
+    kyc_data["counterparty_id"] = counterparty_id
+    response = supabase.table("counterparty_kyc").insert(kyc_data).execute()
+    return response.data
+
+async def update_counterparty_kyc_db(kyc: CounterpartyKYCUpdate, kyc_id: int):
+    kyc_data = kyc.model_dump(mode="json", exclude_unset=True)
+    response = (
+        supabase.table("counterparty_kyc")
+        .update(kyc_data)
+        .eq("id", kyc_id)
+        .execute()
+    )
+    return response.data
+
+async def delete_counterparty_kyc_db(kyc_id: int):
+    response = (
+        supabase.table("counterparty_kyc")
+        .delete()
+        .eq("id", kyc_id)
         .execute()
     )
     return response.data

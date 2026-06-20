@@ -5,6 +5,7 @@ from app.counterparties.managers import (
     CounterpartyManager,
     CounterpartyContactManager,
     CounterpartyBankAccountManager,
+    CounterpartyKYCManager,
     SPAManager,
 )
 from app.counterparties.schemas import (
@@ -219,30 +220,46 @@ async def get_counterparty_bank_accounts(counterparty_id: int):
 # Counterparty KYC
 # -------------------------
 
-@router.post("/{counterparty_id}/kyc")
-async def add_counterparty_kyc(
-    counterparty_id: int,
-    kyc: CounterpartyKYCCreate,
-):
-    pass
-
-
-@router.get("/{counterparty_id}/kyc")
-async def get_counterparty_kyc(counterparty_id: int):
-    pass
-
-
 @router.patch("/kyc/{kyc_id}")
 async def update_counterparty_kyc(
     kyc_id: int,
     kyc: CounterpartyKYCUpdate,
 ):
-    pass
+    try:
+        manager = CounterpartyKYCManager(kyc)
+        return await manager.update_counterparty_kyc(kyc_id)
+    except Exception as e:
+        raise e
 
 
 @router.delete("/kyc/{kyc_id}")
 async def delete_counterparty_kyc(kyc_id: int):
-    pass
+    try:
+        manager = CounterpartyKYCManager()
+        return await manager.delete_counterparty_kyc(kyc_id)
+    except Exception as e:
+        raise e
+
+
+@router.post("/{counterparty_id}/kyc")
+async def add_counterparty_kyc(
+    counterparty_id: int,
+    kyc: CounterpartyKYCCreate,
+):
+    try:
+        manager = CounterpartyKYCManager(kyc)
+        return await manager.add_counterparty_kyc(counterparty_id)
+    except Exception as e:
+        raise e
+
+
+@router.get("/{counterparty_id}/kyc")
+async def get_counterparty_kyc(counterparty_id: int):
+    try:
+        manager = CounterpartyKYCManager()
+        return await manager.get_counterparty_kyc(counterparty_id)
+    except Exception as e:
+        raise e
 
 
 # -------------------------
