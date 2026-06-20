@@ -6,11 +6,7 @@ from app.counterparties.managers import (
     CounterpartyContactManager,
     CounterpartyBankAccountManager,
     CounterpartyKYCManager,
-    SPAManager,
-)
-from app.counterparties.schemas import (
-    CounterpartyBase, 
-    SPABase
+    CounterpartySPAManager,
 )
 
 from app.counterparties.schemas import (
@@ -266,22 +262,40 @@ async def get_counterparty_kyc(counterparty_id: int):
 # Counterparty SPAs
 # -------------------------
 
-@router.post("/{counterparty_id}/spas")
-async def add_counterparty_spa(
-    counterparty_id: int,
-    spa: CounterpartySPACreate,
-):
-    pass
+@router.get("/spas/status/{status}")
+async def get_spas_by_status(status: str):
+    try:
+        manager = CounterpartySPAManager()
+        return await manager.get_spas_by_status(status)
+    except Exception as e:
+        raise e
 
 
-@router.get("/{counterparty_id}/spas")
-async def get_counterparty_spas(counterparty_id: int):
-    pass
+@router.get("/spas/direction/{direction}")
+async def get_spas_by_direction(direction: str):
+    try:
+        manager = CounterpartySPAManager()
+        return await manager.get_spas_by_direction(direction)
+    except Exception as e:
+        raise e
+
+
+@router.get("/company/{company_id}/spas")
+async def get_spas_by_company(company_id: int):
+    try:
+        manager = CounterpartySPAManager()
+        return await manager.get_spas_by_company(company_id)
+    except Exception as e:
+        raise e
 
 
 @router.get("/spas/{spa_id}")
 async def get_counterparty_spa(spa_id: int):
-    pass
+    try:
+        manager = CounterpartySPAManager()
+        return await manager.get_counterparty_spa(spa_id)
+    except Exception as e:
+        raise e
 
 
 @router.patch("/spas/{spa_id}")
@@ -289,27 +303,41 @@ async def update_counterparty_spa(
     spa_id: int,
     spa: CounterpartySPAUpdate,
 ):
-    pass
+    try:
+        manager = CounterpartySPAManager(spa)
+        return await manager.update_counterparty_spa(spa_id)
+    except Exception as e:
+        raise e
 
 
 @router.delete("/spas/{spa_id}")
 async def delete_counterparty_spa(spa_id: int):
-    pass
+    try:
+        manager = CounterpartySPAManager()
+        return await manager.delete_counterparty_spa(spa_id)
+    except Exception as e:
+        raise e
 
 
-@router.get("/spas/status/{status}")
-async def get_spas_by_status(status: str):
-    pass
+@router.post("/{counterparty_id}/spas")
+async def add_counterparty_spa(
+    counterparty_id: int,
+    spa: CounterpartySPACreate,
+):
+    try:
+        manager = CounterpartySPAManager(spa)
+        return await manager.add_counterparty_spa(counterparty_id)
+    except Exception as e:
+        raise e
 
 
-@router.get("/spas/direction/{direction}")
-async def get_spas_by_direction(direction: str):
-    pass
-
-
-@router.get("/company/{company_id}/spas")
-async def get_spas_by_company(company_id: int):
-    pass
+@router.get("/{counterparty_id}/spas")
+async def get_counterparty_spas(counterparty_id: int):
+    try:
+        manager = CounterpartySPAManager()
+        return await manager.get_counterparty_spas(counterparty_id)
+    except Exception as e:
+        raise e
 
 
 # -------------------------
@@ -345,103 +373,3 @@ async def update_counterparty_document(
 @router.delete("/documents/{document_id}")
 async def delete_counterparty_document(document_id: int):
     pass
-
-# Counterparty Routers
-
-@router.get("/counterparties")
-async def get_counterparties():
-    try:
-        manager = CounterpartyManager(None)
-        return await manager.get_counterparties()
-    except Exception as e:
-        raise e
-
-@router.get("/counterparties/{counterparty_id}")
-async def get_counterparty(counterparty_id: int):
-    try:
-        manager = CounterpartyManager(None)
-        return await manager.get_counterparty(counterparty_id)
-    except Exception as e:
-        raise e
-
-@router.post("/add_counterparty")
-async def add_counterparty(counterparty: CounterpartyBase):
-    try:
-        manager = CounterpartyManager(counterparty)
-        return await manager.add_counterparty()
-    except Exception as e:
-        raise e
-
-@router.put("/update_counterparty/{counterparty_id}")
-async def update_counterparty(counterparty_id: int, counterparty: CounterpartyBase):
-    try:
-        manager = CounterpartyManager(counterparty)
-        return await manager.update_counterparty(counterparty_id)
-    except Exception as e:
-        raise e
-
-@router.delete("/delete_counterparty/{counterparty_id}")
-async def delete_counterparty(counterparty_id: int):
-    try:
-        manager = CounterpartyManager(None)
-        return await manager.delete_counterparty(counterparty_id)
-    except Exception as e:
-        raise e
-
-@router.delete("/delete_counterparties")
-async def delete_counterparties():
-    try:
-        manager = CounterpartyManager(None)
-        return await manager.delete_counterparties()
-    except Exception as e:
-        raise e
-
-# SPA Routers
-
-@router.get("/spas")
-async def get_spas():
-    try:
-        manager = SPAManager(None)
-        return await manager.get_spas()
-    except Exception as e:
-        raise e
-
-@router.get("/spas/{spa_id}")
-async def get_spa(spa_id: int):
-    try:
-        manager = SPAManager(None)
-        return await manager.get_spa(spa_id)
-    except Exception as e:
-        raise e
-
-@router.post("/add_spa")
-async def add_spa(spa: SPABase):
-    try:
-        manager = SPAManager(spa)
-        return await manager.add_spa()
-    except Exception as e:
-        raise e
-
-@router.put("/update_spa/{spa_id}")
-async def update_spa(spa_id: int, spa: SPABase):
-    try:
-        manager = SPAManager(spa)
-        return await manager.update_spa(spa_id)
-    except Exception as e:
-        raise e
-
-@router.delete("/delete_spa/{spa_id}")
-async def delete_spa(spa_id: int):
-    try:
-        manager = SPAManager(None)
-        return await manager.delete_spa(spa_id)
-    except Exception as e:
-        raise e
-
-@router.delete("/delete_spas")
-async def delete_spas():
-    try:
-        manager = SPAManager(None)
-        return await manager.delete_spas()
-    except Exception as e:
-        raise e

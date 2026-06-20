@@ -10,7 +10,8 @@ from app.counterparties.schemas import (
     CounterpartyBankAccountUpdate,
     CounterpartyKYCCreate,
     CounterpartyKYCUpdate,
-    SPABase,
+    CounterpartySPACreate,
+    CounterpartySPAUpdate,
 )
 
 
@@ -72,10 +73,6 @@ async def update_counterparty_db(counterparty: CounterpartyUpdate, counterparty_
 
 async def delete_counterparty_db(counterparty_id: int):
     response = supabase.table("counterparties").delete().eq("id", counterparty_id).execute()
-    return response.data
-
-async def delete_counterparties_db():
-    response = supabase.table("counterparties").delete().neq("id", 0).execute()
     return response.data
 
 # Counterparty Contact DB Operations
@@ -210,30 +207,74 @@ async def delete_counterparty_kyc_db(kyc_id: int):
     )
     return response.data
 
-# SPA DB Operations
+# Counterparty SPA DB Operations
 
-async def get_spas_db():
-    response = supabase.table("spas").select("*").execute()
+async def get_counterparty_spas_db(counterparty_id: int):
+    response = (
+        supabase.table("counterparty_spas")
+        .select("*")
+        .eq("counterparty_id", counterparty_id)
+        .execute()
+    )
     return response.data
 
-async def get_spa_db(spa_id: int):
-    response = supabase.table("spas").select("*").eq("id", spa_id).execute()
+async def get_counterparty_spa_db(spa_id: int):
+    response = (
+        supabase.table("counterparty_spas")
+        .select("*")
+        .eq("id", spa_id)
+        .execute()
+    )
     return response.data
 
-async def add_spa_db(spa: SPABase):
-    spa_data = spa.model_dump(mode="json")
-    response = supabase.table("spas").insert(spa_data).execute()
+async def get_spas_by_status_db(status: str):
+    response = (
+        supabase.table("counterparty_spas")
+        .select("*")
+        .eq("status", status)
+        .execute()
+    )
     return response.data
 
-async def update_spa_db(spa: SPABase, spa_id: int):
+async def get_spas_by_direction_db(direction: str):
+    response = (
+        supabase.table("counterparty_spas")
+        .select("*")
+        .eq("direction", direction)
+        .execute()
+    )
+    return response.data
+
+async def get_spas_by_company_db(company_id: int):
+    response = (
+        supabase.table("counterparty_spas")
+        .select("*")
+        .eq("company_id", company_id)
+        .execute()
+    )
+    return response.data
+
+async def add_counterparty_spa_db(counterparty_id: int, spa: CounterpartySPACreate):
+    spa_data = _serialize(spa)
+    spa_data["counterparty_id"] = counterparty_id
+    response = supabase.table("counterparty_spas").insert(spa_data).execute()
+    return response.data
+
+async def update_counterparty_spa_db(spa: CounterpartySPAUpdate, spa_id: int):
     spa_data = spa.model_dump(mode="json", exclude_unset=True)
-    response = supabase.table("spas").update(spa_data).eq("id", spa_id).execute()
+    response = (
+        supabase.table("counterparty_spas")
+        .update(spa_data)
+        .eq("id", spa_id)
+        .execute()
+    )
     return response.data
 
-async def delete_spa_db(spa_id: int):
-    response = supabase.table("spas").delete().eq("id", spa_id).execute()
-    return response.data
-
-async def delete_spas_db():
-    response = supabase.table("spas").delete().neq("id", 0).execute()
+async def delete_counterparty_spa_db(spa_id: int):
+    response = (
+        supabase.table("counterparty_spas")
+        .delete()
+        .eq("id", spa_id)
+        .execute()
+    )
     return response.data

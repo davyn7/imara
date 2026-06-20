@@ -9,8 +9,8 @@ from app.counterparties.schemas import (
     CounterpartyBankAccountUpdate,
     CounterpartyKYCCreate,
     CounterpartyKYCUpdate,
-    CounterpartyBase,
-    SPABase,
+    CounterpartySPACreate,
+    CounterpartySPAUpdate,
 )
 from app.counterparties.db import (
     get_counterparties_db,
@@ -21,7 +21,6 @@ from app.counterparties.db import (
     add_counterparty_db,
     update_counterparty_db,
     delete_counterparty_db,
-    delete_counterparties_db,
     get_counterparty_contacts_db,
     get_counterparty_contact_db,
     add_counterparty_contact_db,
@@ -36,18 +35,20 @@ from app.counterparties.db import (
     add_counterparty_kyc_db,
     update_counterparty_kyc_db,
     delete_counterparty_kyc_db,
-    get_spas_db,
-    get_spa_db,
-    add_spa_db,
-    update_spa_db,
-    delete_spa_db,
-    delete_spas_db,
+    get_counterparty_spas_db,
+    get_counterparty_spa_db,
+    get_spas_by_status_db,
+    get_spas_by_direction_db,
+    get_spas_by_company_db,
+    add_counterparty_spa_db,
+    update_counterparty_spa_db,
+    delete_counterparty_spa_db,
 )
 
 # Counterparty Manager
 
 class CounterpartyManager:
-    def __init__(self, counterparty: CounterpartyCreate | CounterpartyUpdate | CounterpartyBase | None = None):
+    def __init__(self, counterparty: CounterpartyCreate | CounterpartyUpdate | None = None):
         self.counterparty = counterparty
 
     async def get_counterparties(self):
@@ -73,9 +74,6 @@ class CounterpartyManager:
 
     async def delete_counterparty(self, counterparty_id: int):
         return await delete_counterparty_db(counterparty_id)
-
-    async def delete_counterparties(self):
-        return await delete_counterparties_db()
 
 # Counterparty Contact Manager
 
@@ -140,26 +138,32 @@ class CounterpartyKYCManager:
     async def delete_counterparty_kyc(self, kyc_id: int):
         return await delete_counterparty_kyc_db(kyc_id)
 
-# SPA Manager
+# Counterparty SPA Manager
 
-class SPAManager:
-    def __init__(self, spa: SPABase):
+class CounterpartySPAManager:
+    def __init__(self, spa: CounterpartySPACreate | CounterpartySPAUpdate | None = None):
         self.spa = spa
 
-    async def get_spas(self):
-        return await get_spas_db()
+    async def get_counterparty_spas(self, counterparty_id: int):
+        return await get_counterparty_spas_db(counterparty_id)
 
-    async def get_spa(self, spa_id: int):
-        return await get_spa_db(spa_id)
+    async def get_counterparty_spa(self, spa_id: int):
+        return await get_counterparty_spa_db(spa_id)
 
-    async def add_spa(self):
-        return await add_spa_db(self.spa)
+    async def get_spas_by_status(self, status: str):
+        return await get_spas_by_status_db(status)
 
-    async def update_spa(self, spa_id: int):
-        return await update_spa_db(self.spa, spa_id)
+    async def get_spas_by_direction(self, direction: str):
+        return await get_spas_by_direction_db(direction)
 
-    async def delete_spa(self, spa_id: int):
-        return await delete_spa_db(spa_id)
+    async def get_spas_by_company(self, company_id: int):
+        return await get_spas_by_company_db(company_id)
 
-    async def delete_spas(self):
-        return await delete_spas_db()
+    async def add_counterparty_spa(self, counterparty_id: int):
+        return await add_counterparty_spa_db(counterparty_id, self.spa)
+
+    async def update_counterparty_spa(self, spa_id: int):
+        return await update_counterparty_spa_db(self.spa, spa_id)
+
+    async def delete_counterparty_spa(self, spa_id: int):
+        return await delete_counterparty_spa_db(spa_id)
