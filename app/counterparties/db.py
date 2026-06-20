@@ -6,6 +6,8 @@ from app.counterparties.schemas import (
     CounterpartyUpdate,
     CounterpartyContactCreate,
     CounterpartyContactUpdate,
+    CounterpartyBankAccountCreate,
+    CounterpartyBankAccountUpdate,
     SPABase,
 )
 
@@ -115,6 +117,57 @@ async def delete_counterparty_contact_db(contact_id: int):
         supabase.table("counterparty_contacts")
         .delete()
         .eq("id", contact_id)
+        .execute()
+    )
+    return response.data
+
+# Counterparty Bank Account DB Operations
+
+async def get_counterparty_bank_accounts_db(counterparty_id: int):
+    response = (
+        supabase.table("counterparty_bank_accounts")
+        .select("*")
+        .eq("counterparty_id", counterparty_id)
+        .execute()
+    )
+    return response.data
+
+async def get_counterparty_bank_account_db(bank_account_id: int):
+    response = (
+        supabase.table("counterparty_bank_accounts")
+        .select("*")
+        .eq("id", bank_account_id)
+        .execute()
+    )
+    return response.data
+
+async def add_counterparty_bank_account_db(
+    counterparty_id: int,
+    bank_account: CounterpartyBankAccountCreate,
+):
+    bank_account_data = _serialize(bank_account)
+    bank_account_data["counterparty_id"] = counterparty_id
+    response = supabase.table("counterparty_bank_accounts").insert(bank_account_data).execute()
+    return response.data
+
+async def update_counterparty_bank_account_db(
+    bank_account: CounterpartyBankAccountUpdate,
+    bank_account_id: int,
+):
+    bank_account_data = bank_account.model_dump(mode="json", exclude_unset=True)
+    response = (
+        supabase.table("counterparty_bank_accounts")
+        .update(bank_account_data)
+        .eq("id", bank_account_id)
+        .execute()
+    )
+    return response.data
+
+async def delete_counterparty_bank_account_db(bank_account_id: int):
+    response = (
+        supabase.table("counterparty_bank_accounts")
+        .delete()
+        .eq("id", bank_account_id)
         .execute()
     )
     return response.data

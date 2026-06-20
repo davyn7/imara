@@ -4,6 +4,7 @@ from fastapi import APIRouter
 from app.counterparties.managers import (
     CounterpartyManager,
     CounterpartyContactManager,
+    CounterpartyBankAccountManager,
     SPAManager,
 )
 from app.counterparties.schemas import (
@@ -163,22 +164,13 @@ async def get_counterparty_contacts(counterparty_id: int):
 # Counterparty Bank Accounts
 # -------------------------
 
-@router.post("/{counterparty_id}/bank-accounts")
-async def add_counterparty_bank_account(
-    counterparty_id: int,
-    bank_account: CounterpartyBankAccountCreate,
-):
-    pass
-
-
-@router.get("/{counterparty_id}/bank-accounts")
-async def get_counterparty_bank_accounts(counterparty_id: int):
-    pass
-
-
 @router.get("/bank-accounts/{bank_account_id}")
 async def get_counterparty_bank_account(bank_account_id: int):
-    pass
+    try:
+        manager = CounterpartyBankAccountManager()
+        return await manager.get_counterparty_bank_account(bank_account_id)
+    except Exception as e:
+        raise e
 
 
 @router.patch("/bank-accounts/{bank_account_id}")
@@ -186,12 +178,41 @@ async def update_counterparty_bank_account(
     bank_account_id: int,
     bank_account: CounterpartyBankAccountUpdate,
 ):
-    pass
+    try:
+        manager = CounterpartyBankAccountManager(bank_account)
+        return await manager.update_counterparty_bank_account(bank_account_id)
+    except Exception as e:
+        raise e
 
 
 @router.delete("/bank-accounts/{bank_account_id}")
 async def delete_counterparty_bank_account(bank_account_id: int):
-    pass
+    try:
+        manager = CounterpartyBankAccountManager()
+        return await manager.delete_counterparty_bank_account(bank_account_id)
+    except Exception as e:
+        raise e
+
+
+@router.post("/{counterparty_id}/bank-accounts")
+async def add_counterparty_bank_account(
+    counterparty_id: int,
+    bank_account: CounterpartyBankAccountCreate,
+):
+    try:
+        manager = CounterpartyBankAccountManager(bank_account)
+        return await manager.add_counterparty_bank_account(counterparty_id)
+    except Exception as e:
+        raise e
+
+
+@router.get("/{counterparty_id}/bank-accounts")
+async def get_counterparty_bank_accounts(counterparty_id: int):
+    try:
+        manager = CounterpartyBankAccountManager()
+        return await manager.get_counterparty_bank_accounts(counterparty_id)
+    except Exception as e:
+        raise e
 
 
 # -------------------------

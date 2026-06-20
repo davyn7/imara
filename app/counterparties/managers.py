@@ -5,6 +5,8 @@ from app.counterparties.schemas import (
     CounterpartyUpdate,
     CounterpartyContactCreate,
     CounterpartyContactUpdate,
+    CounterpartyBankAccountCreate,
+    CounterpartyBankAccountUpdate,
     CounterpartyBase,
     SPABase,
 )
@@ -23,6 +25,11 @@ from app.counterparties.db import (
     add_counterparty_contact_db,
     update_counterparty_contact_db,
     delete_counterparty_contact_db,
+    get_counterparty_bank_accounts_db,
+    get_counterparty_bank_account_db,
+    add_counterparty_bank_account_db,
+    update_counterparty_bank_account_db,
+    delete_counterparty_bank_account_db,
     get_spas_db,
     get_spa_db,
     add_spa_db,
@@ -84,6 +91,30 @@ class CounterpartyContactManager:
 
     async def delete_counterparty_contact(self, contact_id: int):
         return await delete_counterparty_contact_db(contact_id)
+
+# Counterparty Bank Account Manager
+
+class CounterpartyBankAccountManager:
+    def __init__(
+        self,
+        bank_account: CounterpartyBankAccountCreate | CounterpartyBankAccountUpdate | None = None,
+    ):
+        self.bank_account = bank_account
+
+    async def get_counterparty_bank_accounts(self, counterparty_id: int):
+        return await get_counterparty_bank_accounts_db(counterparty_id)
+
+    async def get_counterparty_bank_account(self, bank_account_id: int):
+        return await get_counterparty_bank_account_db(bank_account_id)
+
+    async def add_counterparty_bank_account(self, counterparty_id: int):
+        return await add_counterparty_bank_account_db(counterparty_id, self.bank_account)
+
+    async def update_counterparty_bank_account(self, bank_account_id: int):
+        return await update_counterparty_bank_account_db(self.bank_account, bank_account_id)
+
+    async def delete_counterparty_bank_account(self, bank_account_id: int):
+        return await delete_counterparty_bank_account_db(bank_account_id)
 
 # SPA Manager
 
