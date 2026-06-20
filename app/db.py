@@ -3,7 +3,6 @@ from app.schemas import (
     ActivityLogBase,
     CompanyBase,
     BankAccountBase,
-    CounterpartyBase,
     TradeBase,
     TradeCostBase,
     BrokerageDealBase,
@@ -68,34 +67,6 @@ async def delete_bank_account_db(bank_account_id: UUID):
 
 async def delete_bank_accounts_db():
     response = supabase.table("bank_accounts").delete().neq("id", "00000000-0000-0000-0000-000000000000").execute()
-    return response.data
-
-# Counterparty DB Operations
-
-async def get_counterparties_db():
-    response = supabase.table("counterparties").select("*").execute()
-    return response.data
-
-async def get_counterparty_db(counterparty_id: UUID):
-    response = supabase.table("counterparties").select("*").eq("id", counterparty_id).execute()
-    return response.data
-
-async def add_counterparty_db(counterparty: CounterpartyBase):
-    counterparty_data = counterparty.model_dump(mode="json")
-    response = supabase.table("counterparties").insert(counterparty_data).execute()
-    return response.data
-
-async def update_counterparty_db(counterparty: CounterpartyBase, counterparty_id: UUID):
-    counterparty_data = counterparty.model_dump(mode="json", exclude_unset=True)
-    response = supabase.table("counterparties").update(counterparty_data).eq("id", counterparty_id).execute()
-    return response.data
-
-async def delete_counterparty_db(counterparty_id: UUID):
-    response = supabase.table("counterparties").delete().eq("id", counterparty_id).execute()
-    return response.data
-
-async def delete_counterparties_db():
-    response = supabase.table("counterparties").delete().neq("id", "00000000-0000-0000-0000-000000000000").execute()
     return response.data
 
 # Trade DB Operations

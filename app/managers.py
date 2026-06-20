@@ -4,7 +4,6 @@ from app.schemas import (
     ActivityLogBase,
     CompanyBase,
     BankAccountBase,
-    CounterpartyBase,
     TradeBase,
     TradeCostBase,
     BrokerageDealBase,
@@ -26,12 +25,6 @@ from app.db import (
     update_bank_account_db,
     delete_bank_account_db,
     delete_bank_accounts_db,
-    get_counterparties_db,
-    get_counterparty_db,
-    add_counterparty_db,
-    update_counterparty_db,
-    delete_counterparty_db,
-    delete_counterparties_db,
     get_trades_db,
     get_trade_db,
     add_trade_db,
@@ -130,30 +123,6 @@ class BankAccountManager:
     
     async def delete_bank_accounts(self):
         return await delete_bank_accounts_db()
-
-# Counterparty Manager
-
-class CounterpartyManager:
-    def __init__(self, counterparty: CounterpartyBase):
-        self.counterparty = counterparty
-    
-    async def get_counterparties(self):
-        return await get_counterparties_db()
-
-    async def get_counterparty(self, counterparty_id: UUID):
-        return await get_counterparty_db(counterparty_id)
-
-    async def add_counterparty(self):
-        return await add_counterparty_db(self.counterparty)
-    
-    async def update_counterparty(self, counterparty_id: UUID):
-        return await update_counterparty_db(self.counterparty, counterparty_id)
-    
-    async def delete_counterparty(self, counterparty_id: UUID):
-        return await delete_counterparty_db(counterparty_id)
-    
-    async def delete_counterparties(self):
-        return await delete_counterparties_db()
 
 # Trade Manager
 # TODO: Implement Trade Manager

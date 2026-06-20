@@ -38,24 +38,6 @@ class BankAccountBase(BaseModel):
     current_balance: Optional[float] = None
     notes: Optional[str] = None
 
-# Counterparty Schema
-
-class CounterpartyBase(BaseModel):
-    counterparty_code: Optional[str] = None
-    name: Optional[str] = None
-    counterparty_type: Optional[str] = "other" # 'buyer', 'seller', 'broker', 'logistics_provider', 'lab', 'bank', 'insurer', 'financier', 'investor', 'other'
-    country: Optional[str] = None
-    city: Optional[str] = None
-    contact_person: Optional[str] = None
-    email: Optional[str] = None
-    phone: Optional[str] = None
-    website: Optional[str] = None
-    kyc_status: Optional[str] = "not_started" # 'not_started', 'in_progress', 'approved', 'rejected', 'expired'
-    risk_rating: Optional[str] = "low" # 'low', 'medium', 'high', 'blacklisted'
-    credit_limit: Optional[float] = None
-    default_currency: Optional[str] = None
-    notes: Optional[str] = None
-
 # Trade Schema
 
 class TradeBase(BaseModel):

@@ -5,7 +5,6 @@ from app.managers import (
     ActivityLogManager,
     CompanyManager,
     BankAccountManager,
-    CounterpartyManager,
     TradeManager,
     TradeCostManager,
     BrokerageDealManager,
@@ -18,7 +17,6 @@ from app.schemas import (
     ActivityLogBase,
     CompanyBase,
     BankAccountBase,
-    CounterpartyBase,
     TradeBase,
     TradeCostBase,
     BrokerageDealBase,
@@ -138,56 +136,6 @@ async def delete_bank_accounts():
     try:
         manager = BankAccountManager(None)
         return await manager.delete_bank_accounts()
-    except Exception as e:
-        raise e
-
-# Counterparty Routers
-
-@router.get("/counterparties")
-async def get_counterparties():
-    try:
-        manager = CounterpartyManager(None)
-        return await manager.get_counterparties()
-    except Exception as e:
-        raise e
-
-@router.get("/counterparties/{counterparty_id}")
-async def get_counterparty(counterparty_id: UUID):
-    try:
-        manager = CounterpartyManager(None)
-        return await manager.get_counterparty(counterparty_id)
-    except Exception as e:
-        raise e
-
-@router.post("/add_counterparty")
-async def add_counterparty(counterparty: CounterpartyBase):
-    try:
-        manager = CounterpartyManager(counterparty)
-        return await manager.add_counterparty()
-    except Exception as e:
-        raise e
-
-@router.put("/update_counterparty/{counterparty_id}")
-async def update_counterparty(counterparty_id: UUID, counterparty: CounterpartyBase):
-    try:
-        manager = CounterpartyManager(counterparty)
-        return await manager.update_counterparty(counterparty_id)
-    except Exception as e:
-        raise e
-
-@router.delete("/delete_counterparty/{counterparty_id}")
-async def delete_counterparty(counterparty_id: UUID):
-    try:
-        manager = CounterpartyManager(None)
-        return await manager.delete_counterparty(counterparty_id)
-    except Exception as e:
-        raise e
-
-@router.delete("/delete_counterparties")
-async def delete_counterparties():
-    try:
-        manager = CounterpartyManager(None)
-        return await manager.delete_counterparties()
     except Exception as e:
         raise e
 

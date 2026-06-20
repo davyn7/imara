@@ -7,6 +7,7 @@ from app.counterparties.managers import (
     CounterpartyBankAccountManager,
     CounterpartyKYCManager,
     CounterpartySPAManager,
+    CounterpartyDocumentManager,
 )
 
 from app.counterparties.schemas import (
@@ -344,22 +345,13 @@ async def get_counterparty_spas(counterparty_id: int):
 # Counterparty Documents
 # -------------------------
 
-@router.post("/{counterparty_id}/documents")
-async def add_counterparty_document(
-    counterparty_id: int,
-    document: CounterpartyDocumentCreate,
-):
-    pass
-
-
-@router.get("/{counterparty_id}/documents")
-async def get_counterparty_documents(counterparty_id: int):
-    pass
-
-
 @router.get("/documents/{document_id}")
 async def get_counterparty_document(document_id: int):
-    pass
+    try:
+        manager = CounterpartyDocumentManager()
+        return await manager.get_counterparty_document(document_id)
+    except Exception as e:
+        raise e
 
 
 @router.patch("/documents/{document_id}")
@@ -367,9 +359,38 @@ async def update_counterparty_document(
     document_id: int,
     document: CounterpartyDocumentUpdate,
 ):
-    pass
+    try:
+        manager = CounterpartyDocumentManager(document)
+        return await manager.update_counterparty_document(document_id)
+    except Exception as e:
+        raise e
 
 
 @router.delete("/documents/{document_id}")
 async def delete_counterparty_document(document_id: int):
-    pass
+    try:
+        manager = CounterpartyDocumentManager()
+        return await manager.delete_counterparty_document(document_id)
+    except Exception as e:
+        raise e
+
+
+@router.post("/{counterparty_id}/documents")
+async def add_counterparty_document(
+    counterparty_id: int,
+    document: CounterpartyDocumentCreate,
+):
+    try:
+        manager = CounterpartyDocumentManager(document)
+        return await manager.add_counterparty_document(counterparty_id)
+    except Exception as e:
+        raise e
+
+
+@router.get("/{counterparty_id}/documents")
+async def get_counterparty_documents(counterparty_id: int):
+    try:
+        manager = CounterpartyDocumentManager()
+        return await manager.get_counterparty_documents(counterparty_id)
+    except Exception as e:
+        raise e

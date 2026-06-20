@@ -11,6 +11,8 @@ from app.counterparties.schemas import (
     CounterpartyKYCUpdate,
     CounterpartySPACreate,
     CounterpartySPAUpdate,
+    CounterpartyDocumentCreate,
+    CounterpartyDocumentUpdate,
 )
 from app.counterparties.db import (
     get_counterparties_db,
@@ -43,6 +45,11 @@ from app.counterparties.db import (
     add_counterparty_spa_db,
     update_counterparty_spa_db,
     delete_counterparty_spa_db,
+    get_counterparty_documents_db,
+    get_counterparty_document_db,
+    add_counterparty_document_db,
+    update_counterparty_document_db,
+    delete_counterparty_document_db,
 )
 
 # Counterparty Manager
@@ -167,3 +174,27 @@ class CounterpartySPAManager:
 
     async def delete_counterparty_spa(self, spa_id: int):
         return await delete_counterparty_spa_db(spa_id)
+
+# Counterparty Document Manager
+
+class CounterpartyDocumentManager:
+    def __init__(
+        self,
+        document: CounterpartyDocumentCreate | CounterpartyDocumentUpdate | None = None,
+    ):
+        self.document = document
+
+    async def get_counterparty_documents(self, counterparty_id: int):
+        return await get_counterparty_documents_db(counterparty_id)
+
+    async def get_counterparty_document(self, document_id: int):
+        return await get_counterparty_document_db(document_id)
+
+    async def add_counterparty_document(self, counterparty_id: int):
+        return await add_counterparty_document_db(counterparty_id, self.document)
+
+    async def update_counterparty_document(self, document_id: int):
+        return await update_counterparty_document_db(self.document, document_id)
+
+    async def delete_counterparty_document(self, document_id: int):
+        return await delete_counterparty_document_db(document_id)

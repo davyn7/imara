@@ -12,6 +12,8 @@ from app.counterparties.schemas import (
     CounterpartyKYCUpdate,
     CounterpartySPACreate,
     CounterpartySPAUpdate,
+    CounterpartyDocumentCreate,
+    CounterpartyDocumentUpdate,
 )
 
 
@@ -275,6 +277,57 @@ async def delete_counterparty_spa_db(spa_id: int):
         supabase.table("counterparty_spas")
         .delete()
         .eq("id", spa_id)
+        .execute()
+    )
+    return response.data
+
+# Counterparty Document DB Operations
+
+async def get_counterparty_documents_db(counterparty_id: int):
+    response = (
+        supabase.table("counterparty_documents")
+        .select("*")
+        .eq("counterparty_id", counterparty_id)
+        .execute()
+    )
+    return response.data
+
+async def get_counterparty_document_db(document_id: int):
+    response = (
+        supabase.table("counterparty_documents")
+        .select("*")
+        .eq("id", document_id)
+        .execute()
+    )
+    return response.data
+
+async def add_counterparty_document_db(
+    counterparty_id: int,
+    document: CounterpartyDocumentCreate,
+):
+    document_data = _serialize(document)
+    document_data["counterparty_id"] = counterparty_id
+    response = supabase.table("counterparty_documents").insert(document_data).execute()
+    return response.data
+
+async def update_counterparty_document_db(
+    document: CounterpartyDocumentUpdate,
+    document_id: int,
+):
+    document_data = document.model_dump(mode="json", exclude_unset=True)
+    response = (
+        supabase.table("counterparty_documents")
+        .update(document_data)
+        .eq("id", document_id)
+        .execute()
+    )
+    return response.data
+
+async def delete_counterparty_document_db(document_id: int):
+    response = (
+        supabase.table("counterparty_documents")
+        .delete()
+        .eq("id", document_id)
         .execute()
     )
     return response.data
