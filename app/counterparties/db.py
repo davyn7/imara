@@ -1,7 +1,12 @@
 # app/counterparties/db.py
 
 from app.connection import supabase
-from app.counterparties.schemas import CounterpartyBase, SPABase
+from app.counterparties.schemas import CounterpartyCreate, CounterpartyUpdate, SPABase
+
+
+def _serialize(model) -> dict:
+    return model.model_dump(mode="json")
+
 
 # Counterparty DB Operations
 
@@ -13,14 +18,46 @@ async def get_counterparty_db(counterparty_id: int):
     response = supabase.table("counterparties").select("*").eq("id", counterparty_id).execute()
     return response.data
 
-async def add_counterparty_db(counterparty: CounterpartyBase):
-    counterparty_data = counterparty.model_dump(mode="json")
+async def get_counterparties_by_company_db(company_id: int):
+    response = (
+        supabase.table("counterparties")
+        .select("*")
+        .eq("company_id", company_id)
+        .execute()
+    )
+    return response.data
+
+async def get_counterparties_by_role_db(role: str):
+    response = (
+        supabase.table("counterparties")
+        .select("*")
+        .contains("roles", [role])
+        .execute()
+    )
+    return response.data
+
+async def get_counterparties_by_status_db(status: str):
+    response = (
+        supabase.table("counterparties")
+        .select("*")
+        .eq("status", status)
+        .execute()
+    )
+    return response.data
+
+async def add_counterparty_db(counterparty: CounterpartyCreate):
+    counterparty_data = _serialize(counterparty)
     response = supabase.table("counterparties").insert(counterparty_data).execute()
     return response.data
 
-async def update_counterparty_db(counterparty: CounterpartyBase, counterparty_id: int):
+async def update_counterparty_db(counterparty: CounterpartyUpdate, counterparty_id: int):
     counterparty_data = counterparty.model_dump(mode="json", exclude_unset=True)
-    response = supabase.table("counterparties").update(counterparty_data).eq("id", counterparty_id).execute()
+    response = (
+        supabase.table("counterparties")
+        .update(counterparty_data)
+        .eq("id", counterparty_id)
+        .execute()
+    )
     return response.data
 
 async def delete_counterparty_db(counterparty_id: int):

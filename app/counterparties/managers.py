@@ -1,12 +1,17 @@
 # app/counterparties/managers.py
 
 from app.counterparties.schemas import (
-    CounterpartyBase, 
-    SPABase
+    CounterpartyCreate,
+    CounterpartyUpdate,
+    CounterpartyBase,
+    SPABase,
 )
 from app.counterparties.db import (
     get_counterparties_db,
     get_counterparty_db,
+    get_counterparties_by_company_db,
+    get_counterparties_by_role_db,
+    get_counterparties_by_status_db,
     add_counterparty_db,
     update_counterparty_db,
     delete_counterparty_db,
@@ -22,7 +27,7 @@ from app.counterparties.db import (
 # Counterparty Manager
 
 class CounterpartyManager:
-    def __init__(self, counterparty: CounterpartyBase):
+    def __init__(self, counterparty: CounterpartyCreate | CounterpartyUpdate | CounterpartyBase | None = None):
         self.counterparty = counterparty
 
     async def get_counterparties(self):
@@ -30,6 +35,15 @@ class CounterpartyManager:
 
     async def get_counterparty(self, counterparty_id: int):
         return await get_counterparty_db(counterparty_id)
+
+    async def get_counterparties_by_company(self, company_id: int):
+        return await get_counterparties_by_company_db(company_id)
+
+    async def get_counterparties_by_role(self, role: str):
+        return await get_counterparties_by_role_db(role)
+
+    async def get_counterparties_by_status(self, status: str):
+        return await get_counterparties_by_status_db(status)
 
     async def add_counterparty(self):
         return await add_counterparty_db(self.counterparty)
