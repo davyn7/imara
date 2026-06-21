@@ -18,6 +18,8 @@ from app.trades.schemas import (
     TradeRevenueUpdate,
     TradeStatusEventCreate,
     TradeStatusEventUpdate,
+    TradeNoteCreate,
+    TradeNoteUpdate,
 )
 
 
@@ -354,6 +356,51 @@ async def delete_trade_status_event_db(status_event_id: int):
         supabase.table("trade_status_events")
         .delete()
         .eq("id", status_event_id)
+        .execute()
+    )
+    return response.data
+
+# Trade Note DB Operations
+
+async def get_trade_notes_db(trade_id: int):
+    response = (
+        supabase.table("trade_notes")
+        .select("*")
+        .eq("trade_id", trade_id)
+        .execute()
+    )
+    return response.data
+
+async def get_trade_note_db(note_id: int):
+    response = (
+        supabase.table("trade_notes")
+        .select("*")
+        .eq("id", note_id)
+        .execute()
+    )
+    return response.data
+
+async def add_trade_note_db(trade_id: int, trade_note: TradeNoteCreate):
+    trade_note_data = _serialize(trade_note)
+    trade_note_data["trade_id"] = trade_id
+    response = supabase.table("trade_notes").insert(trade_note_data).execute()
+    return response.data
+
+async def update_trade_note_db(trade_note: TradeNoteUpdate, note_id: int):
+    trade_note_data = trade_note.model_dump(mode="json", exclude_unset=True)
+    response = (
+        supabase.table("trade_notes")
+        .update(trade_note_data)
+        .eq("id", note_id)
+        .execute()
+    )
+    return response.data
+
+async def delete_trade_note_db(note_id: int):
+    response = (
+        supabase.table("trade_notes")
+        .delete()
+        .eq("id", note_id)
         .execute()
     )
     return response.data

@@ -13,6 +13,8 @@ from app.trades.schemas import (
     TradeRevenueUpdate,
     TradeStatusEventCreate,
     TradeStatusEventUpdate,
+    TradeNoteCreate,
+    TradeNoteUpdate,
 )
 from app.trades.db import (
     get_trades_db,
@@ -56,6 +58,11 @@ from app.trades.db import (
     add_trade_status_event_db,
     update_trade_status_event_db,
     delete_trade_status_event_db,
+    get_trade_notes_db,
+    get_trade_note_db,
+    add_trade_note_db,
+    update_trade_note_db,
+    delete_trade_note_db,
 )
 
 # Trade Manager
@@ -225,3 +232,24 @@ class TradeStatusEventManager:
 
     async def delete_trade_status_event(self, status_event_id: int):
         return await delete_trade_status_event_db(status_event_id)
+
+# Trade Note Manager
+
+class TradeNoteManager:
+    def __init__(self, trade_note: TradeNoteCreate | TradeNoteUpdate | None = None):
+        self.trade_note = trade_note
+
+    async def get_trade_notes(self, trade_id: int):
+        return await get_trade_notes_db(trade_id)
+
+    async def get_trade_note(self, note_id: int):
+        return await get_trade_note_db(note_id)
+
+    async def create_trade_note(self, trade_id: int):
+        return await add_trade_note_db(trade_id, self.trade_note)
+
+    async def update_trade_note(self, note_id: int):
+        return await update_trade_note_db(self.trade_note, note_id)
+
+    async def delete_trade_note(self, note_id: int):
+        return await delete_trade_note_db(note_id)

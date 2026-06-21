@@ -8,6 +8,7 @@ from app.trades.managers import (
     TradeCostManager,
     TradeRevenueManager,
     TradeStatusEventManager,
+    TradeNoteManager,
 )
 from app.trades.schemas import (
     TradeCreate,
@@ -22,6 +23,8 @@ from app.trades.schemas import (
     TradeRevenueUpdate,
     TradeStatusEventCreate,
     TradeStatusEventUpdate,
+    TradeNoteCreate,
+    TradeNoteUpdate,
     TradeBase,
     TradeCostBase,
 )
@@ -403,29 +406,49 @@ async def get_trade_status_events(trade_id: int):
 # Trade Notes
 # ============================================================
 
-@router.post("/{trade_id}/notes")
-async def create_trade_note(trade_id: int):
-    pass
-
-
-@router.get("/{trade_id}/notes")
-async def get_trade_notes(trade_id: int):
-    pass
-
-
 @router.get("/notes/{note_id}")
 async def get_trade_note(note_id: int):
-    pass
+    try:
+        manager = TradeNoteManager()
+        return await manager.get_trade_note(note_id)
+    except Exception as e:
+        raise e
 
 
 @router.patch("/notes/{note_id}")
-async def update_trade_note(note_id: int):
-    pass
+async def update_trade_note(note_id: int, trade_note: TradeNoteUpdate):
+    try:
+        manager = TradeNoteManager(trade_note)
+        return await manager.update_trade_note(note_id)
+    except Exception as e:
+        raise e
 
 
 @router.delete("/notes/{note_id}")
 async def delete_trade_note(note_id: int):
-    pass
+    try:
+        manager = TradeNoteManager()
+        return await manager.delete_trade_note(note_id)
+    except Exception as e:
+        raise e
+
+
+@router.post("/{trade_id}/notes")
+async def create_trade_note(trade_id: int, trade_note: TradeNoteCreate):
+    try:
+        manager = TradeNoteManager(trade_note)
+        return await manager.create_trade_note(trade_id)
+    except Exception as e:
+        raise e
+
+
+@router.get("/{trade_id}/notes")
+async def get_trade_notes(trade_id: int):
+    try:
+        manager = TradeNoteManager()
+        return await manager.get_trade_notes(trade_id)
+    except Exception as e:
+        raise e
 
 
 # ============================================================
