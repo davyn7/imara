@@ -9,6 +9,8 @@ from app.trades.schemas import (
     TradeLegUpdate,
     TradeItemCreate,
     TradeItemUpdate,
+    TradeCostCreate,
+    TradeCostUpdate,
     TradeBase,
     TradeCostBase,
 )
@@ -213,39 +215,67 @@ async def get_trade_items(trade_id: int):
 # Trade Costs
 # ============================================================
 
-@router.post("/{trade_id}/costs")
-async def create_trade_cost(trade_id: int):
-    pass
-
-
-@router.get("/{trade_id}/costs")
-async def get_trade_costs(trade_id: int):
-    pass
-
-
-@router.get("/costs/{trade_cost_id}")
-async def get_trade_cost(trade_cost_id: int):
-    pass
-
-
-@router.patch("/costs/{trade_cost_id}")
-async def update_trade_cost(trade_cost_id: int):
-    pass
-
-
-@router.delete("/costs/{trade_cost_id}")
-async def delete_trade_cost(trade_cost_id: int):
-    pass
-
-
 @router.post("/costs/{trade_cost_id}/mark-actual")
 async def mark_trade_cost_as_actual(trade_cost_id: int):
-    pass
+    try:
+        manager = TradeCostManager()
+        return await manager.mark_trade_cost_as_actual(trade_cost_id)
+    except Exception as e:
+        raise e
 
 
 @router.post("/costs/{trade_cost_id}/mark-paid")
 async def mark_trade_cost_as_paid(trade_cost_id: int):
-    pass
+    try:
+        manager = TradeCostManager()
+        return await manager.mark_trade_cost_as_paid(trade_cost_id)
+    except Exception as e:
+        raise e
+
+
+@router.get("/costs/{trade_cost_id}")
+async def get_trade_cost(trade_cost_id: int):
+    try:
+        manager = TradeCostManager()
+        return await manager.get_trade_cost(trade_cost_id)
+    except Exception as e:
+        raise e
+
+
+@router.patch("/costs/{trade_cost_id}")
+async def update_trade_cost(trade_cost_id: int, trade_cost: TradeCostUpdate):
+    try:
+        manager = TradeCostManager(trade_cost)
+        return await manager.update_trade_cost(trade_cost_id)
+    except Exception as e:
+        raise e
+
+
+@router.delete("/costs/{trade_cost_id}")
+async def delete_trade_cost(trade_cost_id: int):
+    try:
+        manager = TradeCostManager()
+        return await manager.delete_trade_cost(trade_cost_id)
+    except Exception as e:
+        raise e
+
+
+@router.post("/{trade_id}/costs")
+async def create_trade_cost(trade_id: int, trade_cost: TradeCostCreate):
+    try:
+        manager = TradeCostManager(trade_cost)
+        return await manager.create_trade_cost(trade_id)
+    except Exception as e:
+        raise e
+
+
+@router.get("/{trade_id}/costs")
+async def get_trade_costs(trade_id: int):
+    try:
+        manager = TradeCostManager()
+        return await manager.get_trade_costs_by_trade(trade_id)
+    except Exception as e:
+        raise e
 
 
 # ============================================================

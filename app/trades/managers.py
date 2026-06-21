@@ -7,7 +7,8 @@ from app.trades.schemas import (
     TradeLegUpdate,
     TradeItemCreate,
     TradeItemUpdate,
-    TradeCostBase,
+    TradeCostCreate,
+    TradeCostUpdate,
 )
 from app.trades.db import (
     get_trades_db,
@@ -32,10 +33,13 @@ from app.trades.db import (
     update_trade_item_db,
     delete_trade_item_db,
     get_trade_costs_db,
+    get_trade_costs_by_trade_db,
     get_trade_cost_db,
     add_trade_cost_db,
     update_trade_cost_db,
     delete_trade_cost_db,
+    mark_trade_cost_as_actual_db,
+    mark_trade_cost_as_paid_db,
     delete_trade_costs_db,
 )
 
@@ -126,14 +130,20 @@ class TradeItemManager:
 # Trade Cost Manager
 
 class TradeCostManager:
-    def __init__(self, trade_cost: TradeCostBase):
+    def __init__(self, trade_cost: TradeCostCreate | TradeCostUpdate | None = None):
         self.trade_cost = trade_cost
 
     async def get_trade_costs(self):
         return await get_trade_costs_db()
 
+    async def get_trade_costs_by_trade(self, trade_id: int):
+        return await get_trade_costs_by_trade_db(trade_id)
+
     async def get_trade_cost(self, trade_cost_id: int):
         return await get_trade_cost_db(trade_cost_id)
+
+    async def create_trade_cost(self, trade_id: int):
+        return await add_trade_cost_db(self.trade_cost, trade_id)
 
     async def add_trade_cost(self):
         return await add_trade_cost_db(self.trade_cost)
@@ -143,6 +153,12 @@ class TradeCostManager:
 
     async def delete_trade_cost(self, trade_cost_id: int):
         return await delete_trade_cost_db(trade_cost_id)
+
+    async def mark_trade_cost_as_actual(self, trade_cost_id: int):
+        return await mark_trade_cost_as_actual_db(trade_cost_id)
+
+    async def mark_trade_cost_as_paid(self, trade_cost_id: int):
+        return await mark_trade_cost_as_paid_db(trade_cost_id)
 
     async def delete_trade_costs(self):
         return await delete_trade_costs_db()

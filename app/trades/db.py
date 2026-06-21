@@ -1,5 +1,7 @@
 # app/trades/db.py
 
+from datetime import date
+
 from app.connection import supabase
 from app.trades.schemas import (
     TradeCreate,
@@ -10,7 +12,8 @@ from app.trades.schemas import (
     TradeLegStatus,
     TradeItemCreate,
     TradeItemUpdate,
-    TradeCostBase,
+    TradeCostCreate,
+    TradeCostUpdate,
 )
 
 
@@ -192,22 +195,56 @@ async def get_trade_costs_db():
     response = supabase.table("trade_costs").select("*").execute()
     return response.data
 
+async def get_trade_costs_by_trade_db(trade_id: int):
+    response = (
+        supabase.table("trade_costs")
+        .select("*")
+        .eq("trade_id", trade_id)
+        .execute()
+    )
+    return response.data
+
 async def get_trade_cost_db(trade_cost_id: int):
     response = supabase.table("trade_costs").select("*").eq("id", trade_cost_id).execute()
     return response.data
 
-async def add_trade_cost_db(trade_cost: TradeCostBase):
-    trade_cost_data = trade_cost.model_dump(mode="json")
+async def add_trade_cost_db(trade_cost: TradeCostCreate, trade_id: int | None = None):
+    trade_cost_data = _serialize(trade_cost)
+    if trade_id is not None:
+        trade_cost_data["trade_id"] = trade_id
     response = supabase.table("trade_costs").insert(trade_cost_data).execute()
     return response.data
 
-async def update_trade_cost_db(trade_cost: TradeCostBase, trade_cost_id: int):
+async def update_trade_cost_db(trade_cost: TradeCostUpdate, trade_cost_id: int):
     trade_cost_data = trade_cost.model_dump(mode="json", exclude_unset=True)
-    response = supabase.table("trade_costs").update(trade_cost_data).eq("id", trade_cost_id).execute()
+    response = (
+        supabase.table("trade_costs")
+        .update(trade_cost_data)
+        .eq("id", trade_cost_id)
+        .execute()
+    )
     return response.data
 
 async def delete_trade_cost_db(trade_cost_id: int):
     response = supabase.table("trade_costs").delete().eq("id", trade_cost_id).execute()
+    return response.data
+
+async def mark_trade_cost_as_actual_db(trade_cost_id: int):
+    response = (
+        supabase.table("trade_costs")
+        .update({"is_estimated": False})
+        .eq("id", trade_cost_id)
+        .execute()
+    )
+    return response.data
+
+async def mark_trade_cost_as_paid_db(trade_cost_id: int):
+    response = (
+        supabase.table("trade_costs")
+        .update({"paid_date": date.today().isoformat()})
+        .eq("id", trade_cost_id)
+        .execute()
+    )
     return response.data
 
 async def delete_trade_costs_db():
