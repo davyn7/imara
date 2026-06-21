@@ -1,7 +1,17 @@
 # app/trades/db.py
 
 from app.connection import supabase
-from app.trades.schemas import TradeBase, TradeCostBase
+from app.trades.schemas import (
+    TradeCreate,
+    TradeUpdate,
+    TradeStatus,
+    TradeCostBase,
+)
+
+
+def _serialize(model) -> dict:
+    return model.model_dump(mode="json")
+
 
 # Trade DB Operations
 
@@ -13,18 +23,50 @@ async def get_trade_db(trade_id: int):
     response = supabase.table("trades").select("*").eq("id", trade_id).execute()
     return response.data
 
-async def add_trade_db(trade: TradeBase):
-    trade_data = trade.model_dump(mode="json")
+async def add_trade_db(trade: TradeCreate):
+    trade_data = _serialize(trade)
     response = supabase.table("trades").insert(trade_data).execute()
     return response.data
 
-async def update_trade_db(trade: TradeBase, trade_id: int):
+async def update_trade_db(trade: TradeUpdate, trade_id: int):
     trade_data = trade.model_dump(mode="json", exclude_unset=True)
-    response = supabase.table("trades").update(trade_data).eq("id", trade_id).execute()
+    response = (
+        supabase.table("trades")
+        .update(trade_data)
+        .eq("id", trade_id)
+        .execute()
+    )
     return response.data
 
 async def delete_trade_db(trade_id: int):
     response = supabase.table("trades").delete().eq("id", trade_id).execute()
+    return response.data
+
+async def close_trade_db(trade_id: int):
+    response = (
+        supabase.table("trades")
+        .update({"status": TradeStatus.CLOSED.value})
+        .eq("id", trade_id)
+        .execute()
+    )
+    return response.data
+
+async def cancel_trade_db(trade_id: int):
+    response = (
+        supabase.table("trades")
+        .update({"status": TradeStatus.CANCELLED.value})
+        .eq("id", trade_id)
+        .execute()
+    )
+    return response.data
+
+async def dispute_trade_db(trade_id: int):
+    response = (
+        supabase.table("trades")
+        .update({"status": TradeStatus.DISPUTED.value})
+        .eq("id", trade_id)
+        .execute()
+    )
     return response.data
 
 async def delete_trades_db():

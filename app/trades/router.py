@@ -2,9 +2,309 @@
 
 from fastapi import APIRouter
 from app.trades.managers import TradeManager, TradeCostManager
-from app.trades.schemas import TradeBase, TradeCostBase
+from app.trades.schemas import (
+    TradeCreate,
+    TradeUpdate,
+    TradeBase,
+    TradeCostBase,
+)
+
 
 router = APIRouter(prefix="/trades", tags=["Trades"])
+
+
+# ============================================================
+# Trades
+# ============================================================
+
+@router.post("")
+async def create_trade(trade: TradeCreate):
+    try:
+        manager = TradeManager(trade)
+        return await manager.create_trade()
+    except Exception as e:
+        raise e
+
+
+@router.get("")
+async def get_trades():
+    try:
+        manager = TradeManager()
+        return await manager.get_trades()
+    except Exception as e:
+        raise e
+
+
+@router.get("/{trade_id}")
+async def get_trade(trade_id: int):
+    try:
+        manager = TradeManager()
+        return await manager.get_trade(trade_id)
+    except Exception as e:
+        raise e
+
+
+@router.patch("/{trade_id}")
+async def update_trade(trade_id: int, trade: TradeUpdate):
+    try:
+        manager = TradeManager(trade)
+        return await manager.update_trade(trade_id)
+    except Exception as e:
+        raise e
+
+
+@router.delete("/{trade_id}")
+async def delete_trade(trade_id: int):
+    try:
+        manager = TradeManager()
+        return await manager.delete_trade(trade_id)
+    except Exception as e:
+        raise e
+
+
+@router.post("/{trade_id}/close")
+async def close_trade(trade_id: int):
+    try:
+        manager = TradeManager()
+        return await manager.close_trade(trade_id)
+    except Exception as e:
+        raise e
+
+
+@router.post("/{trade_id}/cancel")
+async def cancel_trade(trade_id: int):
+    try:
+        manager = TradeManager()
+        return await manager.cancel_trade(trade_id)
+    except Exception as e:
+        raise e
+
+
+@router.post("/{trade_id}/dispute")
+async def dispute_trade(trade_id: int):
+    try:
+        manager = TradeManager()
+        return await manager.dispute_trade(trade_id)
+    except Exception as e:
+        raise e
+
+
+# ============================================================
+# Trade Legs
+# ============================================================
+
+@router.post("/{trade_id}/legs")
+async def create_trade_leg(trade_id: int):
+    pass
+
+
+@router.get("/{trade_id}/legs")
+async def get_trade_legs(trade_id: int):
+    pass
+
+
+@router.get("/legs/{trade_leg_id}")
+async def get_trade_leg(trade_leg_id: int):
+    pass
+
+
+@router.patch("/legs/{trade_leg_id}")
+async def update_trade_leg(trade_leg_id: int):
+    pass
+
+
+@router.delete("/legs/{trade_leg_id}")
+async def delete_trade_leg(trade_leg_id: int):
+    pass
+
+
+@router.post("/legs/{trade_leg_id}/fulfill")
+async def fulfill_trade_leg(trade_leg_id: int):
+    pass
+
+
+@router.post("/legs/{trade_leg_id}/cancel")
+async def cancel_trade_leg(trade_leg_id: int):
+    pass
+
+
+# ============================================================
+# Trade Items
+# ============================================================
+
+@router.post("/{trade_id}/items")
+async def create_trade_item(trade_id: int):
+    pass
+
+
+@router.get("/{trade_id}/items")
+async def get_trade_items(trade_id: int):
+    pass
+
+
+@router.get("/items/{trade_item_id}")
+async def get_trade_item(trade_item_id: int):
+    pass
+
+
+@router.patch("/items/{trade_item_id}")
+async def update_trade_item(trade_item_id: int):
+    pass
+
+
+@router.delete("/items/{trade_item_id}")
+async def delete_trade_item(trade_item_id: int):
+    pass
+
+
+# ============================================================
+# Trade Costs
+# ============================================================
+
+@router.post("/{trade_id}/costs")
+async def create_trade_cost(trade_id: int):
+    pass
+
+
+@router.get("/{trade_id}/costs")
+async def get_trade_costs(trade_id: int):
+    pass
+
+
+@router.get("/costs/{trade_cost_id}")
+async def get_trade_cost(trade_cost_id: int):
+    pass
+
+
+@router.patch("/costs/{trade_cost_id}")
+async def update_trade_cost(trade_cost_id: int):
+    pass
+
+
+@router.delete("/costs/{trade_cost_id}")
+async def delete_trade_cost(trade_cost_id: int):
+    pass
+
+
+@router.post("/costs/{trade_cost_id}/mark-actual")
+async def mark_trade_cost_as_actual(trade_cost_id: int):
+    pass
+
+
+@router.post("/costs/{trade_cost_id}/mark-paid")
+async def mark_trade_cost_as_paid(trade_cost_id: int):
+    pass
+
+
+# ============================================================
+# Trade Revenues
+# ============================================================
+
+@router.post("/{trade_id}/revenues")
+async def create_trade_revenue(trade_id: int):
+    pass
+
+
+@router.get("/{trade_id}/revenues")
+async def get_trade_revenues(trade_id: int):
+    pass
+
+
+@router.get("/revenues/{trade_revenue_id}")
+async def get_trade_revenue(trade_revenue_id: int):
+    pass
+
+
+@router.patch("/revenues/{trade_revenue_id}")
+async def update_trade_revenue(trade_revenue_id: int):
+    pass
+
+
+@router.delete("/revenues/{trade_revenue_id}")
+async def delete_trade_revenue(trade_revenue_id: int):
+    pass
+
+
+@router.post("/revenues/{trade_revenue_id}/mark-actual")
+async def mark_trade_revenue_as_actual(trade_revenue_id: int):
+    pass
+
+
+# ============================================================
+# Trade Status Events
+# ============================================================
+
+@router.post("/{trade_id}/status-events")
+async def create_trade_status_event(trade_id: int):
+    pass
+
+
+@router.get("/{trade_id}/status-events")
+async def get_trade_status_events(trade_id: int):
+    pass
+
+
+@router.get("/status-events/{status_event_id}")
+async def get_trade_status_event(status_event_id: int):
+    pass
+
+
+@router.patch("/status-events/{status_event_id}")
+async def update_trade_status_event(status_event_id: int):
+    pass
+
+
+@router.delete("/status-events/{status_event_id}")
+async def delete_trade_status_event(status_event_id: int):
+    pass
+
+
+# ============================================================
+# Trade Notes
+# ============================================================
+
+@router.post("/{trade_id}/notes")
+async def create_trade_note(trade_id: int):
+    pass
+
+
+@router.get("/{trade_id}/notes")
+async def get_trade_notes(trade_id: int):
+    pass
+
+
+@router.get("/notes/{note_id}")
+async def get_trade_note(note_id: int):
+    pass
+
+
+@router.patch("/notes/{note_id}")
+async def update_trade_note(note_id: int):
+    pass
+
+
+@router.delete("/notes/{note_id}")
+async def delete_trade_note(note_id: int):
+    pass
+
+
+# ============================================================
+# Trade Summaries
+# ============================================================
+
+@router.get("/{trade_id}/margin")
+async def get_trade_margin_summary(trade_id: int):
+    pass
+
+
+@router.get("/{trade_id}/cashflow")
+async def get_trade_cashflow_summary(trade_id: int):
+    pass
+
+
+@router.get("/{trade_id}/overview")
+async def get_trade_overview(trade_id: int):
+    pass
 
 # Trade Routers
 
