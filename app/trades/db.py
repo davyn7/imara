@@ -594,3 +594,376 @@ async def get_trade_overview_db(trade_id: int):
         "costs_by_category": dict(Counter(cost.get("category") for cost in costs)),
         "recent_status_events": status_events[-5:],
     }
+
+
+def _active_legs(legs: list) -> list:
+    return [
+        leg
+        for leg in legs
+        if leg.get("status") != TradeLegStatus.CANCELLED.value
+    ]
+
+
+def _legs_summary_for_type(legs: list, leg_type: TradeLegType) -> dict:
+    typed_legs = [
+        leg for leg in _active_legs(legs) if leg.get("leg_type") == leg_type.value
+    ]
+    total_contract_value = sum(
+        (_to_decimal(leg.get("total_price")) for leg in typed_legs),
+        Decimal("0"),
+    )
+    fulfilled_legs = [
+        leg for leg in typed_legs if leg.get("status") == TradeLegStatus.FULFILLED.value
+    ]
+    fulfilled_value = sum(
+        (_to_decimal(leg.get("total_price")) for leg in fulfilled_legs),
+        Decimal("0"),
+    )
+    outstanding_legs = [
+        leg
+        for leg in typed_legs
+        if leg.get("status") != TradeLegStatus.FULFILLED.value
+    ]
+    outstanding_value = sum(
+        (_to_decimal(leg.get("total_price")) for leg in outstanding_legs),
+        Decimal("0"),
+    )
+    total_quantity = sum(
+        (_to_decimal(leg.get("quantity")) for leg in typed_legs),
+        Decimal("0"),
+    )
+
+    return {
+        "leg_count": len(typed_legs),
+        "fulfilled_count": len(fulfilled_legs),
+        "outstanding_count": len(outstanding_legs),
+        "total_contract_value": float(total_contract_value),
+        "fulfilled_value": float(fulfilled_value),
+        "outstanding_contract_value": float(outstanding_value),
+        "total_quantity": float(total_quantity),
+    }
+
+
+async def get_trade_costs_summary_db(trade_id: int):
+    trade_data = await get_trade_db(trade_id)
+    if not trade_data:
+        return None
+
+    costs = await get_trade_costs_by_trade_db(trade_id)
+    by_category: dict[str, dict] = {}
+
+    for cost in costs:
+        category = cost.get("category") or "other"
+        if category not in by_category:
+            by_category[category] = {
+                "category": category,
+                "count": 0,
+                "estimated_total": Decimal("0"),
+                "actual_total": Decimal("0"),
+                "paid_total": Decimal("0"),
+                "unpaid_count": 0,
+            }
+
+        amount = _amount_in_base(cost)
+        by_category[category]["count"] += 1
+        if cost.get("is_estimated"):
+            by_category[category]["estimated_total"] += amount
+        else:
+            by_category[category]["actual_total"] += amount
+        if cost.get("paid_date"):
+            by_category[category]["paid_total"] += amount
+        else:
+            by_category[category]["unpaid_count"] += 1
+
+    categories = []
+    for category in sorted(by_category):
+        entry = by_category[category]
+        categories.append(
+            {
+                "category": entry["category"],
+                "count": entry["count"],
+                "estimated_total": float(entry["estimated_total"]),
+                "actual_total": float(entry["actual_total"]),
+                "paid_total": float(entry["paid_total"]),
+                "unpaid_count": entry["unpaid_count"],
+            }
+        )
+
+    return {
+        "trade_id": trade_id,
+        "base_currency": trade_data[0].get("base_currency") or "",
+        "total_estimated_costs": float(
+            sum((entry["estimated_total"] for entry in categories), 0.0)
+        ),
+        "total_actual_costs": float(
+            sum((entry["actual_total"] for entry in categories), 0.0)
+        ),
+        "categories": categories,
+    }
+
+
+async def get_trade_legs_summary_db(trade_id: int):
+    trade_data = await get_trade_db(trade_id)
+    if not trade_data:
+        return None
+
+    legs = await get_trade_legs_db(trade_id)
+    active = _active_legs(legs)
+    purchase = _legs_summary_for_type(legs, TradeLegType.PURCHASE)
+    sale = _legs_summary_for_type(legs, TradeLegType.SALE)
+
+    fulfilled_count = purchase["fulfilled_count"] + sale["fulfilled_count"]
+    active_count = purchase["leg_count"] + sale["leg_count"]
+    fulfillment_progress = (
+        float(fulfilled_count / active_count) if active_count else None
+    )
+
+    return {
+        "trade_id": trade_id,
+        "base_currency": trade_data[0].get("base_currency") or "",
+        "purchase": purchase,
+        "sale": sale,
+        "fulfillment_progress": fulfillment_progress,
+        "outstanding_contract_value": purchase["outstanding_contract_value"]
+        + sale["outstanding_contract_value"],
+        "legs_by_status": dict(Counter(leg.get("status") for leg in legs)),
+    }
+
+
+async def get_trade_treasury_cashflow_summary_db(trade_id: int):
+    from app.treasury.db import get_trade_cashflow_summary_db as get_treasury_trade_cashflow_db
+
+    trade_data = await get_trade_db(trade_id)
+    if not trade_data:
+        return None
+
+    treasury = await get_treasury_trade_cashflow_db(trade_id)
+    trade_cashflow = await get_trade_cashflow_summary_db(trade_id)
+
+    treasury_inflows = treasury.get("total_receivables", 0) + treasury.get(
+        "total_inflows", 0
+    )
+    treasury_outflows = treasury.get("total_payables", 0) + treasury.get(
+        "total_outflows", 0
+    )
+
+    return {
+        "trade_id": trade_id,
+        "base_currency": trade_data[0].get("base_currency") or "",
+        "treasury": treasury,
+        "trade_cashflow": trade_cashflow,
+        "treasury_net_position": treasury_inflows - treasury_outflows,
+        "trade_net_position": trade_cashflow.get("net_actual_cashflow", 0)
+        if trade_cashflow
+        else 0,
+        "combined_net_position": (treasury_inflows - treasury_outflows)
+        + (trade_cashflow.get("net_actual_cashflow", 0) if trade_cashflow else 0),
+    }
+
+
+async def get_trades_portfolio_summary_db(
+    company_id: int | None = None,
+    status: str | None = None,
+):
+    query = supabase.table("trades").select("*")
+    if company_id is not None:
+        query = query.eq("imara_entity_id", company_id)
+    if status is not None:
+        query = query.eq("status", status)
+    trades = query.execute().data
+
+    total_estimated_gross_profit = Decimal("0")
+    total_actual_gross_profit = Decimal("0")
+    total_estimated_revenue = Decimal("0")
+    total_open_cashflow_exposure = Decimal("0")
+    trades_by_status: Counter = Counter()
+    trade_rows = []
+
+    for trade in trades:
+        trade_id = trade["id"]
+        margin = await get_trade_margin_summary_db(trade_id)
+        cashflow = await get_trade_cashflow_summary_db(trade_id)
+        trades_by_status[trade.get("status")] += 1
+
+        if margin:
+            total_estimated_gross_profit += Decimal(
+                str(margin["estimated_gross_profit"])
+            )
+            total_actual_gross_profit += Decimal(str(margin["actual_gross_profit"]))
+            total_estimated_revenue += Decimal(str(margin["estimated_revenue"]))
+
+        if cashflow:
+            total_open_cashflow_exposure += Decimal(
+                str(cashflow["net_estimated_cashflow"])
+            )
+
+        trade_rows.append(
+            {
+                "trade_id": trade_id,
+                "trade_code": trade.get("trade_code"),
+                "status": trade.get("status"),
+                "commodity": trade.get("commodity"),
+                "margin_summary": margin,
+                "cashflow_summary": cashflow,
+            }
+        )
+
+    weighted_margin = _margin_percentage(
+        total_estimated_gross_profit, total_estimated_revenue
+    )
+
+    return {
+        "filters": {
+            "company_id": company_id,
+            "status": status,
+        },
+        "trade_count": len(trades),
+        "trades_by_status": dict(trades_by_status),
+        "total_estimated_gross_profit": float(total_estimated_gross_profit),
+        "total_actual_gross_profit": float(total_actual_gross_profit),
+        "weighted_estimated_margin_percentage": weighted_margin,
+        "total_open_cashflow_exposure": float(total_open_cashflow_exposure),
+        "trades": trade_rows,
+    }
+
+
+async def get_trade_settlement_status_db(trade_id: int):
+    trade_data = await get_trade_db(trade_id)
+    if not trade_data:
+        return None
+
+    trade = trade_data[0]
+    margin = await get_trade_margin_summary_db(trade_id)
+    cashflow = await get_trade_cashflow_summary_db(trade_id)
+    legs = await get_trade_legs_db(trade_id)
+    costs = await get_trade_costs_by_trade_db(trade_id)
+    revenues = await get_trade_revenues_by_trade_db(trade_id)
+
+    unpaid_costs = [cost for cost in costs if not cost.get("paid_date")]
+    estimated_costs = [cost for cost in costs if cost.get("is_estimated")]
+    estimated_revenues = [revenue for revenue in revenues if revenue.get("is_estimated")]
+    unfulfilled_legs = [
+        leg
+        for leg in _active_legs(legs)
+        if leg.get("status") != TradeLegStatus.FULFILLED.value
+    ]
+
+    terminal_statuses = {
+        TradeStatus.CLOSED.value,
+        TradeStatus.CANCELLED.value,
+    }
+    blockers = []
+    if trade.get("status") in terminal_statuses:
+        blockers.append("trade_already_terminal")
+    if estimated_revenues:
+        blockers.append("estimated_revenues_remaining")
+    if estimated_costs:
+        blockers.append("estimated_costs_remaining")
+    if unpaid_costs:
+        blockers.append("unpaid_costs_remaining")
+    if unfulfilled_legs:
+        blockers.append("unfulfilled_legs_remaining")
+
+    ready_to_close = len(blockers) == 0
+
+    return {
+        "trade_id": trade_id,
+        "trade_status": trade.get("status"),
+        "ready_to_close": ready_to_close,
+        "blockers": blockers,
+        "margin_summary": margin,
+        "cashflow_summary": cashflow,
+        "estimated_vs_actual_variance": {
+            "revenue": float(
+                Decimal(str(margin["actual_revenue"]))
+                - Decimal(str(margin["estimated_revenue"]))
+            )
+            if margin
+            else 0.0,
+            "gross_profit": float(
+                Decimal(str(margin["actual_gross_profit"]))
+                - Decimal(str(margin["estimated_gross_profit"]))
+            )
+            if margin
+            else 0.0,
+        },
+        "unpaid_cost_count": len(unpaid_costs),
+        "unfulfilled_leg_count": len(unfulfilled_legs),
+        "estimated_revenue_count": len(estimated_revenues),
+        "estimated_cost_count": len(estimated_costs),
+    }
+
+
+async def get_trade_items_summary_db(trade_id: int):
+    trade_data = await get_trade_db(trade_id)
+    if not trade_data:
+        return None
+
+    items = await get_trade_items_db(trade_id)
+    legs = await get_trade_legs_db(trade_id)
+
+    item_qty_by_unit: Counter = Counter()
+    leg_qty_by_unit: Counter = Counter()
+    by_commodity: dict[str, dict] = {}
+
+    for item in items:
+        unit = item.get("quantity_unit") or "unknown"
+        quantity = _to_decimal(item.get("quantity"))
+        item_qty_by_unit[unit] += quantity
+
+        commodity = item.get("commodity") or "unknown"
+        if commodity not in by_commodity:
+            by_commodity[commodity] = {
+                "commodity": commodity,
+                "item_count": 0,
+                "total_quantity": Decimal("0"),
+                "quantity_units": set(),
+            }
+        by_commodity[commodity]["item_count"] += 1
+        by_commodity[commodity]["total_quantity"] += quantity
+        by_commodity[commodity]["quantity_units"].add(unit)
+
+    for leg in _active_legs(legs):
+        unit = leg.get("quantity_unit") or "unknown"
+        leg_qty_by_unit[unit] += _to_decimal(leg.get("quantity"))
+
+    quantity_mismatches = []
+    for unit in sorted(set(item_qty_by_unit) | set(leg_qty_by_unit)):
+        item_qty = item_qty_by_unit.get(unit, Decimal("0"))
+        leg_qty = leg_qty_by_unit.get(unit, Decimal("0"))
+        if item_qty != leg_qty:
+            quantity_mismatches.append(
+                {
+                    "quantity_unit": unit,
+                    "item_quantity": float(item_qty),
+                    "leg_quantity": float(leg_qty),
+                    "difference": float(item_qty - leg_qty),
+                }
+            )
+
+    commodities = []
+    for commodity in sorted(by_commodity):
+        entry = by_commodity[commodity]
+        commodities.append(
+            {
+                "commodity": entry["commodity"],
+                "item_count": entry["item_count"],
+                "total_quantity": float(entry["total_quantity"]),
+                "quantity_units": sorted(entry["quantity_units"]),
+            }
+        )
+
+    return {
+        "trade_id": trade_id,
+        "item_count": len(items),
+        "leg_count": len(_active_legs(legs)),
+        "commodities": commodities,
+        "quantity_by_unit": {
+            unit: float(item_qty_by_unit[unit]) for unit in sorted(item_qty_by_unit)
+        },
+        "leg_quantity_by_unit": {
+            unit: float(leg_qty_by_unit[unit]) for unit in sorted(leg_qty_by_unit)
+        },
+        "quantity_mismatches": quantity_mismatches,
+        "has_quantity_mismatch": len(quantity_mismatches) > 0,
+    }

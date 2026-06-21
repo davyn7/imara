@@ -1,6 +1,6 @@
 # app/trades/router.py
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 from app.trades.managers import (
     TradeManager,
     TradeLegManager,
@@ -52,6 +52,18 @@ async def get_trades():
     try:
         manager = TradeManager()
         return await manager.get_trades()
+    except Exception as e:
+        raise e
+
+
+@router.get("/summary")
+async def get_trades_portfolio_summary(
+    company_id: int | None = Query(None),
+    status: str | None = Query(None),
+):
+    try:
+        manager = TradeSummaryManager()
+        return await manager.get_trades_portfolio_summary(company_id, status)
     except Exception as e:
         raise e
 
@@ -455,6 +467,51 @@ async def get_trade_notes(trade_id: int):
 # ============================================================
 # Trade Summaries
 # ============================================================
+
+@router.get("/{trade_id}/costs/summary")
+async def get_trade_costs_summary(trade_id: int):
+    try:
+        manager = TradeSummaryManager()
+        return await manager.get_trade_costs_summary(trade_id)
+    except Exception as e:
+        raise e
+
+
+@router.get("/{trade_id}/legs/summary")
+async def get_trade_legs_summary(trade_id: int):
+    try:
+        manager = TradeSummaryManager()
+        return await manager.get_trade_legs_summary(trade_id)
+    except Exception as e:
+        raise e
+
+
+@router.get("/{trade_id}/treasury-cashflow")
+async def get_trade_treasury_cashflow_summary(trade_id: int):
+    try:
+        manager = TradeSummaryManager()
+        return await manager.get_trade_treasury_cashflow_summary(trade_id)
+    except Exception as e:
+        raise e
+
+
+@router.get("/{trade_id}/settlement-status")
+async def get_trade_settlement_status(trade_id: int):
+    try:
+        manager = TradeSummaryManager()
+        return await manager.get_trade_settlement_status(trade_id)
+    except Exception as e:
+        raise e
+
+
+@router.get("/{trade_id}/items/summary")
+async def get_trade_items_summary(trade_id: int):
+    try:
+        manager = TradeSummaryManager()
+        return await manager.get_trade_items_summary(trade_id)
+    except Exception as e:
+        raise e
+
 
 @router.get("/{trade_id}/margin")
 async def get_trade_margin_summary(trade_id: int):

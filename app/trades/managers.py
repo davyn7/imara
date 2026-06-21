@@ -66,6 +66,12 @@ from app.trades.db import (
     get_trade_margin_summary_db,
     get_trade_cashflow_summary_db,
     get_trade_overview_db,
+    get_trade_costs_summary_db,
+    get_trade_legs_summary_db,
+    get_trade_treasury_cashflow_summary_db,
+    get_trades_portfolio_summary_db,
+    get_trade_settlement_status_db,
+    get_trade_items_summary_db,
 )
 
 # Trade Manager
@@ -268,3 +274,25 @@ class TradeSummaryManager:
 
     async def get_trade_overview(self, trade_id: int):
         return await get_trade_overview_db(trade_id)
+
+    async def get_trade_costs_summary(self, trade_id: int):
+        return await get_trade_costs_summary_db(trade_id)
+
+    async def get_trade_legs_summary(self, trade_id: int):
+        return await get_trade_legs_summary_db(trade_id)
+
+    async def get_trade_treasury_cashflow_summary(self, trade_id: int):
+        return await get_trade_treasury_cashflow_summary_db(trade_id)
+
+    async def get_trades_portfolio_summary(
+        self,
+        company_id: int | None = None,
+        status: str | None = None,
+    ):
+        return await get_trades_portfolio_summary_db(company_id, status)
+
+    async def get_trade_settlement_status(self, trade_id: int):
+        return await get_trade_settlement_status_db(trade_id)
+
+    async def get_trade_items_summary(self, trade_id: int):
+        return await get_trade_items_summary_db(trade_id)
