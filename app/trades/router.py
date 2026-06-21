@@ -1,10 +1,14 @@
 # app/trades/router.py
 
 from fastapi import APIRouter
-from app.trades.managers import TradeManager, TradeCostManager
+from app.trades.managers import TradeManager, TradeLegManager, TradeItemManager, TradeCostManager
 from app.trades.schemas import (
     TradeCreate,
     TradeUpdate,
+    TradeLegCreate,
+    TradeLegUpdate,
+    TradeItemCreate,
+    TradeItemUpdate,
     TradeBase,
     TradeCostBase,
 )
@@ -93,68 +97,116 @@ async def dispute_trade(trade_id: int):
 # Trade Legs
 # ============================================================
 
-@router.post("/{trade_id}/legs")
-async def create_trade_leg(trade_id: int):
-    pass
-
-
-@router.get("/{trade_id}/legs")
-async def get_trade_legs(trade_id: int):
-    pass
-
-
-@router.get("/legs/{trade_leg_id}")
-async def get_trade_leg(trade_leg_id: int):
-    pass
-
-
-@router.patch("/legs/{trade_leg_id}")
-async def update_trade_leg(trade_leg_id: int):
-    pass
-
-
-@router.delete("/legs/{trade_leg_id}")
-async def delete_trade_leg(trade_leg_id: int):
-    pass
-
-
 @router.post("/legs/{trade_leg_id}/fulfill")
 async def fulfill_trade_leg(trade_leg_id: int):
-    pass
+    try:
+        manager = TradeLegManager()
+        return await manager.fulfill_trade_leg(trade_leg_id)
+    except Exception as e:
+        raise e
 
 
 @router.post("/legs/{trade_leg_id}/cancel")
 async def cancel_trade_leg(trade_leg_id: int):
-    pass
+    try:
+        manager = TradeLegManager()
+        return await manager.cancel_trade_leg(trade_leg_id)
+    except Exception as e:
+        raise e
+
+
+@router.get("/legs/{trade_leg_id}")
+async def get_trade_leg(trade_leg_id: int):
+    try:
+        manager = TradeLegManager()
+        return await manager.get_trade_leg(trade_leg_id)
+    except Exception as e:
+        raise e
+
+
+@router.patch("/legs/{trade_leg_id}")
+async def update_trade_leg(trade_leg_id: int, trade_leg: TradeLegUpdate):
+    try:
+        manager = TradeLegManager(trade_leg)
+        return await manager.update_trade_leg(trade_leg_id)
+    except Exception as e:
+        raise e
+
+
+@router.delete("/legs/{trade_leg_id}")
+async def delete_trade_leg(trade_leg_id: int):
+    try:
+        manager = TradeLegManager()
+        return await manager.delete_trade_leg(trade_leg_id)
+    except Exception as e:
+        raise e
+
+
+@router.post("/{trade_id}/legs")
+async def create_trade_leg(trade_id: int, trade_leg: TradeLegCreate):
+    try:
+        manager = TradeLegManager(trade_leg)
+        return await manager.create_trade_leg(trade_id)
+    except Exception as e:
+        raise e
+
+
+@router.get("/{trade_id}/legs")
+async def get_trade_legs(trade_id: int):
+    try:
+        manager = TradeLegManager()
+        return await manager.get_trade_legs(trade_id)
+    except Exception as e:
+        raise e
 
 
 # ============================================================
 # Trade Items
 # ============================================================
 
-@router.post("/{trade_id}/items")
-async def create_trade_item(trade_id: int):
-    pass
-
-
-@router.get("/{trade_id}/items")
-async def get_trade_items(trade_id: int):
-    pass
-
-
 @router.get("/items/{trade_item_id}")
 async def get_trade_item(trade_item_id: int):
-    pass
+    try:
+        manager = TradeItemManager()
+        return await manager.get_trade_item(trade_item_id)
+    except Exception as e:
+        raise e
 
 
 @router.patch("/items/{trade_item_id}")
-async def update_trade_item(trade_item_id: int):
-    pass
+async def update_trade_item(trade_item_id: int, trade_item: TradeItemUpdate):
+    try:
+        manager = TradeItemManager(trade_item)
+        return await manager.update_trade_item(trade_item_id)
+    except Exception as e:
+        raise e
 
 
 @router.delete("/items/{trade_item_id}")
 async def delete_trade_item(trade_item_id: int):
-    pass
+    try:
+        manager = TradeItemManager()
+        return await manager.delete_trade_item(trade_item_id)
+    except Exception as e:
+        raise e
+
+
+@router.post("/{trade_id}/items")
+async def create_trade_item(trade_id: int, trade_item: TradeItemCreate):
+    try:
+        manager = TradeItemManager(trade_item)
+        return await manager.create_trade_item(trade_id)
+    except Exception as e:
+        raise e
+
+
+@router.get("/{trade_id}/items")
+async def get_trade_items(trade_id: int):
+    try:
+        manager = TradeItemManager()
+        return await manager.get_trade_items(trade_id)
+    except Exception as e:
+        raise e
 
 
 # ============================================================

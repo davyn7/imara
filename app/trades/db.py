@@ -5,6 +5,11 @@ from app.trades.schemas import (
     TradeCreate,
     TradeUpdate,
     TradeStatus,
+    TradeLegCreate,
+    TradeLegUpdate,
+    TradeLegStatus,
+    TradeItemCreate,
+    TradeItemUpdate,
     TradeCostBase,
 )
 
@@ -71,6 +76,114 @@ async def dispute_trade_db(trade_id: int):
 
 async def delete_trades_db():
     response = supabase.table("trades").delete().neq("id", 0).execute()
+    return response.data
+
+# Trade Leg DB Operations
+
+async def get_trade_legs_db(trade_id: int):
+    response = (
+        supabase.table("trade_legs")
+        .select("*")
+        .eq("trade_id", trade_id)
+        .execute()
+    )
+    return response.data
+
+async def get_trade_leg_db(trade_leg_id: int):
+    response = (
+        supabase.table("trade_legs")
+        .select("*")
+        .eq("id", trade_leg_id)
+        .execute()
+    )
+    return response.data
+
+async def add_trade_leg_db(trade_id: int, trade_leg: TradeLegCreate):
+    trade_leg_data = _serialize(trade_leg)
+    trade_leg_data["trade_id"] = trade_id
+    response = supabase.table("trade_legs").insert(trade_leg_data).execute()
+    return response.data
+
+async def update_trade_leg_db(trade_leg: TradeLegUpdate, trade_leg_id: int):
+    trade_leg_data = trade_leg.model_dump(mode="json", exclude_unset=True)
+    response = (
+        supabase.table("trade_legs")
+        .update(trade_leg_data)
+        .eq("id", trade_leg_id)
+        .execute()
+    )
+    return response.data
+
+async def delete_trade_leg_db(trade_leg_id: int):
+    response = (
+        supabase.table("trade_legs")
+        .delete()
+        .eq("id", trade_leg_id)
+        .execute()
+    )
+    return response.data
+
+async def fulfill_trade_leg_db(trade_leg_id: int):
+    response = (
+        supabase.table("trade_legs")
+        .update({"status": TradeLegStatus.FULFILLED.value})
+        .eq("id", trade_leg_id)
+        .execute()
+    )
+    return response.data
+
+async def cancel_trade_leg_db(trade_leg_id: int):
+    response = (
+        supabase.table("trade_legs")
+        .update({"status": TradeLegStatus.CANCELLED.value})
+        .eq("id", trade_leg_id)
+        .execute()
+    )
+    return response.data
+
+# Trade Item DB Operations
+
+async def get_trade_items_db(trade_id: int):
+    response = (
+        supabase.table("trade_items")
+        .select("*")
+        .eq("trade_id", trade_id)
+        .execute()
+    )
+    return response.data
+
+async def get_trade_item_db(trade_item_id: int):
+    response = (
+        supabase.table("trade_items")
+        .select("*")
+        .eq("id", trade_item_id)
+        .execute()
+    )
+    return response.data
+
+async def add_trade_item_db(trade_id: int, trade_item: TradeItemCreate):
+    trade_item_data = _serialize(trade_item)
+    trade_item_data["trade_id"] = trade_id
+    response = supabase.table("trade_items").insert(trade_item_data).execute()
+    return response.data
+
+async def update_trade_item_db(trade_item: TradeItemUpdate, trade_item_id: int):
+    trade_item_data = trade_item.model_dump(mode="json", exclude_unset=True)
+    response = (
+        supabase.table("trade_items")
+        .update(trade_item_data)
+        .eq("id", trade_item_id)
+        .execute()
+    )
+    return response.data
+
+async def delete_trade_item_db(trade_item_id: int):
+    response = (
+        supabase.table("trade_items")
+        .delete()
+        .eq("id", trade_item_id)
+        .execute()
+    )
     return response.data
 
 # Trade Cost DB Operations

@@ -1,6 +1,14 @@
 # app/trades/managers.py
 
-from app.trades.schemas import TradeCreate, TradeUpdate, TradeCostBase
+from app.trades.schemas import (
+    TradeCreate,
+    TradeUpdate,
+    TradeLegCreate,
+    TradeLegUpdate,
+    TradeItemCreate,
+    TradeItemUpdate,
+    TradeCostBase,
+)
 from app.trades.db import (
     get_trades_db,
     get_trade_db,
@@ -11,6 +19,18 @@ from app.trades.db import (
     cancel_trade_db,
     dispute_trade_db,
     delete_trades_db,
+    get_trade_legs_db,
+    get_trade_leg_db,
+    add_trade_leg_db,
+    update_trade_leg_db,
+    delete_trade_leg_db,
+    fulfill_trade_leg_db,
+    cancel_trade_leg_db,
+    get_trade_items_db,
+    get_trade_item_db,
+    add_trade_item_db,
+    update_trade_item_db,
+    delete_trade_item_db,
     get_trade_costs_db,
     get_trade_cost_db,
     add_trade_cost_db,
@@ -54,6 +74,54 @@ class TradeManager:
 
     async def delete_trades(self):
         return await delete_trades_db()
+
+# Trade Leg Manager
+
+class TradeLegManager:
+    def __init__(self, trade_leg: TradeLegCreate | TradeLegUpdate | None = None):
+        self.trade_leg = trade_leg
+
+    async def get_trade_legs(self, trade_id: int):
+        return await get_trade_legs_db(trade_id)
+
+    async def get_trade_leg(self, trade_leg_id: int):
+        return await get_trade_leg_db(trade_leg_id)
+
+    async def create_trade_leg(self, trade_id: int):
+        return await add_trade_leg_db(trade_id, self.trade_leg)
+
+    async def update_trade_leg(self, trade_leg_id: int):
+        return await update_trade_leg_db(self.trade_leg, trade_leg_id)
+
+    async def delete_trade_leg(self, trade_leg_id: int):
+        return await delete_trade_leg_db(trade_leg_id)
+
+    async def fulfill_trade_leg(self, trade_leg_id: int):
+        return await fulfill_trade_leg_db(trade_leg_id)
+
+    async def cancel_trade_leg(self, trade_leg_id: int):
+        return await cancel_trade_leg_db(trade_leg_id)
+
+# Trade Item Manager
+
+class TradeItemManager:
+    def __init__(self, trade_item: TradeItemCreate | TradeItemUpdate | None = None):
+        self.trade_item = trade_item
+
+    async def get_trade_items(self, trade_id: int):
+        return await get_trade_items_db(trade_id)
+
+    async def get_trade_item(self, trade_item_id: int):
+        return await get_trade_item_db(trade_item_id)
+
+    async def create_trade_item(self, trade_id: int):
+        return await add_trade_item_db(trade_id, self.trade_item)
+
+    async def update_trade_item(self, trade_item_id: int):
+        return await update_trade_item_db(self.trade_item, trade_item_id)
+
+    async def delete_trade_item(self, trade_item_id: int):
+        return await delete_trade_item_db(trade_item_id)
 
 # Trade Cost Manager
 
