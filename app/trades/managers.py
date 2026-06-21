@@ -63,6 +63,9 @@ from app.trades.db import (
     add_trade_note_db,
     update_trade_note_db,
     delete_trade_note_db,
+    get_trade_margin_summary_db,
+    get_trade_cashflow_summary_db,
+    get_trade_overview_db,
 )
 
 # Trade Manager
@@ -253,3 +256,15 @@ class TradeNoteManager:
 
     async def delete_trade_note(self, note_id: int):
         return await delete_trade_note_db(note_id)
+
+# Trade Summary Manager
+
+class TradeSummaryManager:
+    async def get_trade_margin_summary(self, trade_id: int):
+        return await get_trade_margin_summary_db(trade_id)
+
+    async def get_trade_cashflow_summary(self, trade_id: int):
+        return await get_trade_cashflow_summary_db(trade_id)
+
+    async def get_trade_overview(self, trade_id: int):
+        return await get_trade_overview_db(trade_id)

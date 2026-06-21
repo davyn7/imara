@@ -1,6 +1,8 @@
 # app/trades/db.py
 
+from collections import Counter
 from datetime import date
+from decimal import Decimal
 
 from app.connection import supabase
 from app.trades.schemas import (
@@ -10,6 +12,7 @@ from app.trades.schemas import (
     TradeLegCreate,
     TradeLegUpdate,
     TradeLegStatus,
+    TradeLegType,
     TradeItemCreate,
     TradeItemUpdate,
     TradeCostCreate,
@@ -25,6 +28,27 @@ from app.trades.schemas import (
 
 def _serialize(model) -> dict:
     return model.model_dump(mode="json")
+
+
+def _to_decimal(value) -> Decimal:
+    if value is None:
+        return Decimal("0")
+    if isinstance(value, Decimal):
+        return value
+    return Decimal(str(value))
+
+
+def _amount_in_base(record: dict) -> Decimal:
+    base_amount = record.get("amount_base_currency")
+    if base_amount is not None:
+        return _to_decimal(base_amount)
+    return _to_decimal(record.get("amount"))
+
+
+def _margin_percentage(gross_profit: Decimal, revenue: Decimal):
+    if revenue <= 0:
+        return None
+    return float((gross_profit / revenue) * 100)
 
 
 # Trade DB Operations
@@ -404,3 +428,169 @@ async def delete_trade_note_db(note_id: int):
         .execute()
     )
     return response.data
+
+# Trade Summary DB Operations
+
+async def get_trade_margin_summary_db(trade_id: int):
+    trade_data = await get_trade_db(trade_id)
+    if not trade_data:
+        return None
+
+    trade = trade_data[0]
+    base_currency = trade.get("base_currency") or ""
+
+    revenues = await get_trade_revenues_by_trade_db(trade_id)
+    costs = await get_trade_costs_by_trade_db(trade_id)
+    legs = await get_trade_legs_db(trade_id)
+
+    estimated_revenue = sum(
+        (_amount_in_base(r) for r in revenues if r.get("is_estimated")),
+        Decimal("0"),
+    )
+    actual_revenue = sum(
+        (_amount_in_base(r) for r in revenues if not r.get("is_estimated")),
+        Decimal("0"),
+    )
+
+    purchase_legs = [
+        leg
+        for leg in legs
+        if leg.get("leg_type") == TradeLegType.PURCHASE.value
+        and leg.get("status") != TradeLegStatus.CANCELLED.value
+    ]
+    estimated_purchase_cost = sum(
+        (_to_decimal(leg.get("total_price")) for leg in purchase_legs),
+        Decimal("0"),
+    )
+    actual_purchase_cost = sum(
+        (
+            _to_decimal(leg.get("total_price"))
+            for leg in purchase_legs
+            if leg.get("status") == TradeLegStatus.FULFILLED.value
+        ),
+        Decimal("0"),
+    )
+
+    estimated_trade_costs = sum(
+        (_amount_in_base(c) for c in costs if c.get("is_estimated")),
+        Decimal("0"),
+    )
+    actual_trade_costs = sum(
+        (_amount_in_base(c) for c in costs if not c.get("is_estimated")),
+        Decimal("0"),
+    )
+
+    estimated_gross_profit = (
+        estimated_revenue - estimated_purchase_cost - estimated_trade_costs
+    )
+    actual_gross_profit = actual_revenue - actual_purchase_cost - actual_trade_costs
+
+    return {
+        "trade_id": trade_id,
+        "base_currency": base_currency,
+        "estimated_revenue": float(estimated_revenue),
+        "estimated_purchase_cost": float(estimated_purchase_cost),
+        "estimated_trade_costs": float(estimated_trade_costs),
+        "estimated_gross_profit": float(estimated_gross_profit),
+        "estimated_margin_percentage": _margin_percentage(
+            estimated_gross_profit, estimated_revenue
+        ),
+        "actual_revenue": float(actual_revenue),
+        "actual_purchase_cost": float(actual_purchase_cost),
+        "actual_trade_costs": float(actual_trade_costs),
+        "actual_gross_profit": float(actual_gross_profit),
+        "actual_margin_percentage": _margin_percentage(
+            actual_gross_profit, actual_revenue
+        ),
+    }
+
+
+async def get_trade_cashflow_summary_db(trade_id: int):
+    trade_data = await get_trade_db(trade_id)
+    if not trade_data:
+        return None
+
+    trade = trade_data[0]
+    base_currency = trade.get("base_currency") or ""
+
+    revenues = await get_trade_revenues_by_trade_db(trade_id)
+    costs = await get_trade_costs_by_trade_db(trade_id)
+
+    total_estimated_inflows = sum(
+        (_amount_in_base(r) for r in revenues if r.get("is_estimated")),
+        Decimal("0"),
+    )
+    total_actual_inflows = sum(
+        (_amount_in_base(r) for r in revenues if not r.get("is_estimated")),
+        Decimal("0"),
+    )
+    total_estimated_outflows = sum(
+        (_amount_in_base(c) for c in costs if c.get("is_estimated")),
+        Decimal("0"),
+    )
+    total_actual_outflows = sum(
+        (_amount_in_base(c) for c in costs if not c.get("is_estimated")),
+        Decimal("0"),
+    )
+    total_paid_outflows = sum(
+        (_amount_in_base(c) for c in costs if c.get("paid_date")),
+        Decimal("0"),
+    )
+
+    unpaid_outflows = [cost for cost in costs if not cost.get("paid_date")]
+    unpaid_outflows.sort(key=lambda cost: cost.get("due_date") or "")
+
+    estimated_inflows = [
+        revenue for revenue in revenues if revenue.get("is_estimated")
+    ]
+    estimated_inflows.sort(key=lambda revenue: revenue.get("revenue_date") or "")
+
+    net_estimated_cashflow = total_estimated_inflows - total_estimated_outflows
+    net_actual_cashflow = total_actual_inflows - total_actual_outflows
+
+    return {
+        "trade_id": trade_id,
+        "base_currency": base_currency,
+        "total_estimated_inflows": float(total_estimated_inflows),
+        "total_actual_inflows": float(total_actual_inflows),
+        "total_estimated_outflows": float(total_estimated_outflows),
+        "total_actual_outflows": float(total_actual_outflows),
+        "total_paid_outflows": float(total_paid_outflows),
+        "net_estimated_cashflow": float(net_estimated_cashflow),
+        "net_actual_cashflow": float(net_actual_cashflow),
+        "unpaid_outflows": unpaid_outflows,
+        "estimated_inflows": estimated_inflows,
+    }
+
+
+async def get_trade_overview_db(trade_id: int):
+    trade_data = await get_trade_db(trade_id)
+    if not trade_data:
+        return None
+
+    legs = await get_trade_legs_db(trade_id)
+    items = await get_trade_items_db(trade_id)
+    costs = await get_trade_costs_by_trade_db(trade_id)
+    revenues = await get_trade_revenues_by_trade_db(trade_id)
+    status_events = await get_trade_status_events_db(trade_id)
+    notes = await get_trade_notes_db(trade_id)
+
+    margin_summary = await get_trade_margin_summary_db(trade_id)
+    cashflow_summary = await get_trade_cashflow_summary_db(trade_id)
+
+    return {
+        "trade": trade_data[0],
+        "margin_summary": margin_summary,
+        "cashflow_summary": cashflow_summary,
+        "counts": {
+            "legs": len(legs),
+            "items": len(items),
+            "costs": len(costs),
+            "revenues": len(revenues),
+            "status_events": len(status_events),
+            "notes": len(notes),
+        },
+        "legs_by_status": dict(Counter(leg.get("status") for leg in legs)),
+        "costs_by_category": dict(Counter(cost.get("category") for cost in costs)),
+        "recent_status_events": status_events[-5:],
+    }

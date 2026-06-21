@@ -9,6 +9,7 @@ from app.trades.managers import (
     TradeRevenueManager,
     TradeStatusEventManager,
     TradeNoteManager,
+    TradeSummaryManager,
 )
 from app.trades.schemas import (
     TradeCreate,
@@ -457,17 +458,29 @@ async def get_trade_notes(trade_id: int):
 
 @router.get("/{trade_id}/margin")
 async def get_trade_margin_summary(trade_id: int):
-    pass
+    try:
+        manager = TradeSummaryManager()
+        return await manager.get_trade_margin_summary(trade_id)
+    except Exception as e:
+        raise e
 
 
 @router.get("/{trade_id}/cashflow")
 async def get_trade_cashflow_summary(trade_id: int):
-    pass
+    try:
+        manager = TradeSummaryManager()
+        return await manager.get_trade_cashflow_summary(trade_id)
+    except Exception as e:
+        raise e
 
 
 @router.get("/{trade_id}/overview")
 async def get_trade_overview(trade_id: int):
-    pass
+    try:
+        manager = TradeSummaryManager()
+        return await manager.get_trade_overview(trade_id)
+    except Exception as e:
+        raise e
 
 # Trade Routers
 
