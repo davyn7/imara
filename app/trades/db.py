@@ -14,6 +14,8 @@ from app.trades.schemas import (
     TradeItemUpdate,
     TradeCostCreate,
     TradeCostUpdate,
+    TradeRevenueCreate,
+    TradeRevenueUpdate,
 )
 
 
@@ -249,4 +251,59 @@ async def mark_trade_cost_as_paid_db(trade_cost_id: int):
 
 async def delete_trade_costs_db():
     response = supabase.table("trade_costs").delete().neq("id", 0).execute()
+    return response.data
+
+# Trade Revenue DB Operations
+
+async def get_trade_revenues_by_trade_db(trade_id: int):
+    response = (
+        supabase.table("trade_revenues")
+        .select("*")
+        .eq("trade_id", trade_id)
+        .execute()
+    )
+    return response.data
+
+async def get_trade_revenue_db(trade_revenue_id: int):
+    response = (
+        supabase.table("trade_revenues")
+        .select("*")
+        .eq("id", trade_revenue_id)
+        .execute()
+    )
+    return response.data
+
+async def add_trade_revenue_db(trade_revenue: TradeRevenueCreate, trade_id: int | None = None):
+    trade_revenue_data = _serialize(trade_revenue)
+    if trade_id is not None:
+        trade_revenue_data["trade_id"] = trade_id
+    response = supabase.table("trade_revenues").insert(trade_revenue_data).execute()
+    return response.data
+
+async def update_trade_revenue_db(trade_revenue: TradeRevenueUpdate, trade_revenue_id: int):
+    trade_revenue_data = trade_revenue.model_dump(mode="json", exclude_unset=True)
+    response = (
+        supabase.table("trade_revenues")
+        .update(trade_revenue_data)
+        .eq("id", trade_revenue_id)
+        .execute()
+    )
+    return response.data
+
+async def delete_trade_revenue_db(trade_revenue_id: int):
+    response = (
+        supabase.table("trade_revenues")
+        .delete()
+        .eq("id", trade_revenue_id)
+        .execute()
+    )
+    return response.data
+
+async def mark_trade_revenue_as_actual_db(trade_revenue_id: int):
+    response = (
+        supabase.table("trade_revenues")
+        .update({"is_estimated": False})
+        .eq("id", trade_revenue_id)
+        .execute()
+    )
     return response.data

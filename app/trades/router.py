@@ -1,7 +1,13 @@
 # app/trades/router.py
 
 from fastapi import APIRouter
-from app.trades.managers import TradeManager, TradeLegManager, TradeItemManager, TradeCostManager
+from app.trades.managers import (
+    TradeManager,
+    TradeLegManager,
+    TradeItemManager,
+    TradeCostManager,
+    TradeRevenueManager,
+)
 from app.trades.schemas import (
     TradeCreate,
     TradeUpdate,
@@ -11,6 +17,8 @@ from app.trades.schemas import (
     TradeItemUpdate,
     TradeCostCreate,
     TradeCostUpdate,
+    TradeRevenueCreate,
+    TradeRevenueUpdate,
     TradeBase,
     TradeCostBase,
 )
@@ -282,34 +290,58 @@ async def get_trade_costs(trade_id: int):
 # Trade Revenues
 # ============================================================
 
-@router.post("/{trade_id}/revenues")
-async def create_trade_revenue(trade_id: int):
-    pass
-
-
-@router.get("/{trade_id}/revenues")
-async def get_trade_revenues(trade_id: int):
-    pass
+@router.post("/revenues/{trade_revenue_id}/mark-actual")
+async def mark_trade_revenue_as_actual(trade_revenue_id: int):
+    try:
+        manager = TradeRevenueManager()
+        return await manager.mark_trade_revenue_as_actual(trade_revenue_id)
+    except Exception as e:
+        raise e
 
 
 @router.get("/revenues/{trade_revenue_id}")
 async def get_trade_revenue(trade_revenue_id: int):
-    pass
+    try:
+        manager = TradeRevenueManager()
+        return await manager.get_trade_revenue(trade_revenue_id)
+    except Exception as e:
+        raise e
 
 
 @router.patch("/revenues/{trade_revenue_id}")
-async def update_trade_revenue(trade_revenue_id: int):
-    pass
+async def update_trade_revenue(trade_revenue_id: int, trade_revenue: TradeRevenueUpdate):
+    try:
+        manager = TradeRevenueManager(trade_revenue)
+        return await manager.update_trade_revenue(trade_revenue_id)
+    except Exception as e:
+        raise e
 
 
 @router.delete("/revenues/{trade_revenue_id}")
 async def delete_trade_revenue(trade_revenue_id: int):
-    pass
+    try:
+        manager = TradeRevenueManager()
+        return await manager.delete_trade_revenue(trade_revenue_id)
+    except Exception as e:
+        raise e
 
 
-@router.post("/revenues/{trade_revenue_id}/mark-actual")
-async def mark_trade_revenue_as_actual(trade_revenue_id: int):
-    pass
+@router.post("/{trade_id}/revenues")
+async def create_trade_revenue(trade_id: int, trade_revenue: TradeRevenueCreate):
+    try:
+        manager = TradeRevenueManager(trade_revenue)
+        return await manager.create_trade_revenue(trade_id)
+    except Exception as e:
+        raise e
+
+
+@router.get("/{trade_id}/revenues")
+async def get_trade_revenues(trade_id: int):
+    try:
+        manager = TradeRevenueManager()
+        return await manager.get_trade_revenues(trade_id)
+    except Exception as e:
+        raise e
 
 
 # ============================================================

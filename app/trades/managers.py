@@ -9,6 +9,8 @@ from app.trades.schemas import (
     TradeItemUpdate,
     TradeCostCreate,
     TradeCostUpdate,
+    TradeRevenueCreate,
+    TradeRevenueUpdate,
 )
 from app.trades.db import (
     get_trades_db,
@@ -41,6 +43,12 @@ from app.trades.db import (
     mark_trade_cost_as_actual_db,
     mark_trade_cost_as_paid_db,
     delete_trade_costs_db,
+    get_trade_revenues_by_trade_db,
+    get_trade_revenue_db,
+    add_trade_revenue_db,
+    update_trade_revenue_db,
+    delete_trade_revenue_db,
+    mark_trade_revenue_as_actual_db,
 )
 
 # Trade Manager
@@ -162,3 +170,27 @@ class TradeCostManager:
 
     async def delete_trade_costs(self):
         return await delete_trade_costs_db()
+
+# Trade Revenue Manager
+
+class TradeRevenueManager:
+    def __init__(self, trade_revenue: TradeRevenueCreate | TradeRevenueUpdate | None = None):
+        self.trade_revenue = trade_revenue
+
+    async def get_trade_revenues(self, trade_id: int):
+        return await get_trade_revenues_by_trade_db(trade_id)
+
+    async def get_trade_revenue(self, trade_revenue_id: int):
+        return await get_trade_revenue_db(trade_revenue_id)
+
+    async def create_trade_revenue(self, trade_id: int):
+        return await add_trade_revenue_db(self.trade_revenue, trade_id)
+
+    async def update_trade_revenue(self, trade_revenue_id: int):
+        return await update_trade_revenue_db(self.trade_revenue, trade_revenue_id)
+
+    async def delete_trade_revenue(self, trade_revenue_id: int):
+        return await delete_trade_revenue_db(trade_revenue_id)
+
+    async def mark_trade_revenue_as_actual(self, trade_revenue_id: int):
+        return await mark_trade_revenue_as_actual_db(trade_revenue_id)
