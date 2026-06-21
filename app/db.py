@@ -3,8 +3,6 @@ from app.schemas import (
     ActivityLogBase,
     CompanyBase,
     BankAccountBase,
-    TradeBase,
-    TradeCostBase,
     BrokerageDealBase,
     ShipmentBase,
     EquityRoundBase,
@@ -67,62 +65,6 @@ async def delete_bank_account_db(bank_account_id: UUID):
 
 async def delete_bank_accounts_db():
     response = supabase.table("bank_accounts").delete().neq("id", "00000000-0000-0000-0000-000000000000").execute()
-    return response.data
-
-# Trade DB Operations
-
-async def get_trades_db():
-    response = supabase.table("trades").select("*").execute()
-    return response.data
-
-async def get_trade_db(trade_id: UUID):
-    response = supabase.table("trades").select("*").eq("id", trade_id).execute()
-    return response.data
-
-async def add_trade_db(trade: TradeBase):
-    trade_data = trade.model_dump(mode="json")
-    response = supabase.table("trades").insert(trade_data).execute()
-    return response.data
-
-async def update_trade_db(trade: TradeBase, trade_id: UUID):
-    trade_data = trade.model_dump(mode="json", exclude_unset=True)
-    response = supabase.table("trades").update(trade_data).eq("id", trade_id).execute()
-    return response.data
-
-async def delete_trade_db(trade_id: UUID):
-    response = supabase.table("trades").delete().eq("id", trade_id).execute()
-    return response.data
-
-async def delete_trades_db():
-    response = supabase.table("trades").delete().neq("id", "00000000-0000-0000-0000-000000000000").execute()
-    return response.data
-
-# Trade Cost DB Operations
-
-async def get_trade_costs_db():
-    response = supabase.table("trade_costs").select("*").execute()
-    return response.data
-
-async def get_trade_cost_db(trade_cost_id: UUID):
-    response = supabase.table("trade_costs").select("*").eq("id", trade_cost_id).execute()
-    return response.data
-
-async def add_trade_cost_db(trade_cost: TradeCostBase):
-    trade_cost_data = trade_cost.model_dump(mode="json")
-    response = supabase.table("trade_costs").insert(trade_cost_data).execute()
-    return response.data
-
-async def update_trade_cost_db(trade_cost: TradeCostBase, trade_cost_id: UUID):
-    trade_cost_data = trade_cost.model_dump(mode="json", exclude_unset=True)
-    response = supabase.table("trade_costs").update(trade_cost_data).eq("id", trade_cost_id).execute()
-    return response.data
-
-async def delete_trade_cost_db(trade_cost_id: UUID):
-    response = supabase.table("trade_costs").delete().eq("id", trade_cost_id).execute()
-    return response.data
-
-async def delete_trade_costs_db():
-    response = supabase.table("trade_costs").delete().neq("id", "00000000-0000-0000-0000-000000000000").execute()
     return response.data
 
 # Brokerage Deal DB Operations

@@ -25,7 +25,6 @@ from app.trades.db import (
     close_trade_db,
     cancel_trade_db,
     dispute_trade_db,
-    delete_trades_db,
     get_trade_legs_db,
     get_trade_leg_db,
     add_trade_leg_db,
@@ -38,7 +37,6 @@ from app.trades.db import (
     add_trade_item_db,
     update_trade_item_db,
     delete_trade_item_db,
-    get_trade_costs_db,
     get_trade_costs_by_trade_db,
     get_trade_cost_db,
     add_trade_cost_db,
@@ -46,7 +44,6 @@ from app.trades.db import (
     delete_trade_cost_db,
     mark_trade_cost_as_actual_db,
     mark_trade_cost_as_paid_db,
-    delete_trade_costs_db,
     get_trade_revenues_by_trade_db,
     get_trade_revenue_db,
     add_trade_revenue_db,
@@ -89,9 +86,6 @@ class TradeManager:
     async def create_trade(self):
         return await add_trade_db(self.trade)
 
-    async def add_trade(self):
-        return await add_trade_db(self.trade)
-
     async def update_trade(self, trade_id: int):
         return await update_trade_db(self.trade, trade_id)
 
@@ -106,9 +100,6 @@ class TradeManager:
 
     async def dispute_trade(self, trade_id: int):
         return await dispute_trade_db(trade_id)
-
-    async def delete_trades(self):
-        return await delete_trades_db()
 
 # Trade Leg Manager
 
@@ -164,9 +155,6 @@ class TradeCostManager:
     def __init__(self, trade_cost: TradeCostCreate | TradeCostUpdate | None = None):
         self.trade_cost = trade_cost
 
-    async def get_trade_costs(self):
-        return await get_trade_costs_db()
-
     async def get_trade_costs_by_trade(self, trade_id: int):
         return await get_trade_costs_by_trade_db(trade_id)
 
@@ -175,9 +163,6 @@ class TradeCostManager:
 
     async def create_trade_cost(self, trade_id: int):
         return await add_trade_cost_db(self.trade_cost, trade_id)
-
-    async def add_trade_cost(self):
-        return await add_trade_cost_db(self.trade_cost)
 
     async def update_trade_cost(self, trade_cost_id: int):
         return await update_trade_cost_db(self.trade_cost, trade_cost_id)
@@ -190,9 +175,6 @@ class TradeCostManager:
 
     async def mark_trade_cost_as_paid(self, trade_cost_id: int):
         return await mark_trade_cost_as_paid_db(trade_cost_id)
-
-    async def delete_trade_costs(self):
-        return await delete_trade_costs_db()
 
 # Trade Revenue Manager
 

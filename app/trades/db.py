@@ -107,10 +107,6 @@ async def dispute_trade_db(trade_id: int):
     )
     return response.data
 
-async def delete_trades_db():
-    response = supabase.table("trades").delete().neq("id", 0).execute()
-    return response.data
-
 # Trade Leg DB Operations
 
 async def get_trade_legs_db(trade_id: int):
@@ -221,10 +217,6 @@ async def delete_trade_item_db(trade_item_id: int):
 
 # Trade Cost DB Operations
 
-async def get_trade_costs_db():
-    response = supabase.table("trade_costs").select("*").execute()
-    return response.data
-
 async def get_trade_costs_by_trade_db(trade_id: int):
     response = (
         supabase.table("trade_costs")
@@ -275,10 +267,6 @@ async def mark_trade_cost_as_paid_db(trade_cost_id: int):
         .eq("id", trade_cost_id)
         .execute()
     )
-    return response.data
-
-async def delete_trade_costs_db():
-    response = supabase.table("trade_costs").delete().neq("id", 0).execute()
     return response.data
 
 # Trade Revenue DB Operations

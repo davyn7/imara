@@ -4,8 +4,6 @@ from app.schemas import (
     ActivityLogBase,
     CompanyBase,
     BankAccountBase,
-    TradeBase,
-    TradeCostBase,
     BrokerageDealBase,
     ShipmentBase,
     EquityRoundBase,
@@ -25,18 +23,6 @@ from app.db import (
     update_bank_account_db,
     delete_bank_account_db,
     delete_bank_accounts_db,
-    get_trades_db,
-    get_trade_db,
-    add_trade_db,
-    update_trade_db,
-    delete_trade_db,
-    delete_trades_db,
-    get_trade_costs_db,
-    get_trade_cost_db,
-    add_trade_cost_db,
-    update_trade_cost_db,
-    delete_trade_cost_db,
-    delete_trade_costs_db,
     get_brokerage_deals_db,
     get_brokerage_deal_db,
     add_brokerage_deal_db,
@@ -123,54 +109,6 @@ class BankAccountManager:
     
     async def delete_bank_accounts(self):
         return await delete_bank_accounts_db()
-
-# Trade Manager
-# TODO: Implement Trade Manager
-class TradeManager:
-    def __init__(self, trade: TradeBase):
-        self.trade = trade
-    
-    async def get_trades(self):
-        return await get_trades_db()
-
-    async def get_trade(self, trade_id: UUID):
-        return await get_trade_db(trade_id)
-
-    async def add_trade(self):
-        return await add_trade_db(self.trade)
-    
-    async def update_trade(self, trade_id: UUID):
-        return await update_trade_db(self.trade, trade_id)
-    
-    async def delete_trade(self, trade_id: UUID):
-        return await delete_trade_db(trade_id)
-
-    async def delete_trades(self):
-        return await delete_trades_db()
-
-# Trade Cost Manager
-# TODO: Implement Trade Cost Manager
-class TradeCostManager:
-    def __init__(self, trade_cost: TradeCostBase):
-        self.trade_cost = trade_cost
-
-    async def get_trade_costs(self):
-        return await get_trade_costs_db()
-
-    async def get_trade_cost(self, trade_cost_id: UUID):
-        return await get_trade_cost_db(trade_cost_id)
-
-    async def add_trade_cost(self):
-        return await add_trade_cost_db(self.trade_cost)
-    
-    async def update_trade_cost(self, trade_cost_id: UUID):
-        return await update_trade_cost_db(self.trade_cost, trade_cost_id)
-    
-    async def delete_trade_cost(self, trade_cost_id: UUID):
-        return await delete_trade_cost_db(trade_cost_id)
-    
-    async def delete_trade_costs(self):
-        return await delete_trade_costs_db()
 
 # Brokerage Deal Manager
 # TODO: Implement Brokerage Deal Manager
