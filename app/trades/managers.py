@@ -11,6 +11,8 @@ from app.trades.schemas import (
     TradeCostUpdate,
     TradeRevenueCreate,
     TradeRevenueUpdate,
+    TradeStatusEventCreate,
+    TradeStatusEventUpdate,
 )
 from app.trades.db import (
     get_trades_db,
@@ -49,6 +51,11 @@ from app.trades.db import (
     update_trade_revenue_db,
     delete_trade_revenue_db,
     mark_trade_revenue_as_actual_db,
+    get_trade_status_events_db,
+    get_trade_status_event_db,
+    add_trade_status_event_db,
+    update_trade_status_event_db,
+    delete_trade_status_event_db,
 )
 
 # Trade Manager
@@ -194,3 +201,27 @@ class TradeRevenueManager:
 
     async def mark_trade_revenue_as_actual(self, trade_revenue_id: int):
         return await mark_trade_revenue_as_actual_db(trade_revenue_id)
+
+# Trade Status Event Manager
+
+class TradeStatusEventManager:
+    def __init__(
+        self,
+        status_event: TradeStatusEventCreate | TradeStatusEventUpdate | None = None,
+    ):
+        self.status_event = status_event
+
+    async def get_trade_status_events(self, trade_id: int):
+        return await get_trade_status_events_db(trade_id)
+
+    async def get_trade_status_event(self, status_event_id: int):
+        return await get_trade_status_event_db(status_event_id)
+
+    async def create_trade_status_event(self, trade_id: int):
+        return await add_trade_status_event_db(trade_id, self.status_event)
+
+    async def update_trade_status_event(self, status_event_id: int):
+        return await update_trade_status_event_db(self.status_event, status_event_id)
+
+    async def delete_trade_status_event(self, status_event_id: int):
+        return await delete_trade_status_event_db(status_event_id)

@@ -16,6 +16,8 @@ from app.trades.schemas import (
     TradeCostUpdate,
     TradeRevenueCreate,
     TradeRevenueUpdate,
+    TradeStatusEventCreate,
+    TradeStatusEventUpdate,
 )
 
 
@@ -304,6 +306,54 @@ async def mark_trade_revenue_as_actual_db(trade_revenue_id: int):
         supabase.table("trade_revenues")
         .update({"is_estimated": False})
         .eq("id", trade_revenue_id)
+        .execute()
+    )
+    return response.data
+
+# Trade Status Event DB Operations
+
+async def get_trade_status_events_db(trade_id: int):
+    response = (
+        supabase.table("trade_status_events")
+        .select("*")
+        .eq("trade_id", trade_id)
+        .execute()
+    )
+    return response.data
+
+async def get_trade_status_event_db(status_event_id: int):
+    response = (
+        supabase.table("trade_status_events")
+        .select("*")
+        .eq("id", status_event_id)
+        .execute()
+    )
+    return response.data
+
+async def add_trade_status_event_db(trade_id: int, status_event: TradeStatusEventCreate):
+    status_event_data = _serialize(status_event)
+    status_event_data["trade_id"] = trade_id
+    response = supabase.table("trade_status_events").insert(status_event_data).execute()
+    return response.data
+
+async def update_trade_status_event_db(
+    status_event: TradeStatusEventUpdate,
+    status_event_id: int,
+):
+    status_event_data = status_event.model_dump(mode="json", exclude_unset=True)
+    response = (
+        supabase.table("trade_status_events")
+        .update(status_event_data)
+        .eq("id", status_event_id)
+        .execute()
+    )
+    return response.data
+
+async def delete_trade_status_event_db(status_event_id: int):
+    response = (
+        supabase.table("trade_status_events")
+        .delete()
+        .eq("id", status_event_id)
         .execute()
     )
     return response.data

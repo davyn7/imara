@@ -7,6 +7,7 @@ from app.trades.managers import (
     TradeItemManager,
     TradeCostManager,
     TradeRevenueManager,
+    TradeStatusEventManager,
 )
 from app.trades.schemas import (
     TradeCreate,
@@ -19,6 +20,8 @@ from app.trades.schemas import (
     TradeCostUpdate,
     TradeRevenueCreate,
     TradeRevenueUpdate,
+    TradeStatusEventCreate,
+    TradeStatusEventUpdate,
     TradeBase,
     TradeCostBase,
 )
@@ -348,29 +351,52 @@ async def get_trade_revenues(trade_id: int):
 # Trade Status Events
 # ============================================================
 
-@router.post("/{trade_id}/status-events")
-async def create_trade_status_event(trade_id: int):
-    pass
-
-
-@router.get("/{trade_id}/status-events")
-async def get_trade_status_events(trade_id: int):
-    pass
-
-
 @router.get("/status-events/{status_event_id}")
 async def get_trade_status_event(status_event_id: int):
-    pass
+    try:
+        manager = TradeStatusEventManager()
+        return await manager.get_trade_status_event(status_event_id)
+    except Exception as e:
+        raise e
 
 
 @router.patch("/status-events/{status_event_id}")
-async def update_trade_status_event(status_event_id: int):
-    pass
+async def update_trade_status_event(
+    status_event_id: int,
+    status_event: TradeStatusEventUpdate,
+):
+    try:
+        manager = TradeStatusEventManager(status_event)
+        return await manager.update_trade_status_event(status_event_id)
+    except Exception as e:
+        raise e
 
 
 @router.delete("/status-events/{status_event_id}")
 async def delete_trade_status_event(status_event_id: int):
-    pass
+    try:
+        manager = TradeStatusEventManager()
+        return await manager.delete_trade_status_event(status_event_id)
+    except Exception as e:
+        raise e
+
+
+@router.post("/{trade_id}/status-events")
+async def create_trade_status_event(trade_id: int, status_event: TradeStatusEventCreate):
+    try:
+        manager = TradeStatusEventManager(status_event)
+        return await manager.create_trade_status_event(trade_id)
+    except Exception as e:
+        raise e
+
+
+@router.get("/{trade_id}/status-events")
+async def get_trade_status_events(trade_id: int):
+    try:
+        manager = TradeStatusEventManager()
+        return await manager.get_trade_status_events(trade_id)
+    except Exception as e:
+        raise e
 
 
 # ============================================================
