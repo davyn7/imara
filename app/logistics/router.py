@@ -7,6 +7,8 @@ from app.logistics.managers import (
     ShipmentLegManager,
     PortManager,
     PortCallManager,
+    VesselManager,
+    ContainerManager,
 )
 from app.logistics.schemas import (
     ShipmentCreate,
@@ -21,6 +23,10 @@ from app.logistics.schemas import (
     PortUpdate,
     PortCallCreate,
     PortCallUpdate,
+    VesselCreate,
+    VesselUpdate,
+    ContainerCreate,
+    ContainerUpdate,
 )
 
 router = APIRouter(prefix="/logistics", tags=["Logistics"])
@@ -489,28 +495,48 @@ async def mark_port_call_as_sailed(port_call_id: int):
 # ============================================================
 
 @router.post("/vessels")
-async def create_vessel():
-    pass
+async def create_vessel(vessel: VesselCreate):
+    try:
+        manager = VesselManager(vessel)
+        return await manager.create_vessel()
+    except Exception as e:
+        raise e
 
 
 @router.get("/vessels")
 async def get_vessels():
-    pass
+    try:
+        manager = VesselManager()
+        return await manager.get_vessels()
+    except Exception as e:
+        raise e
 
 
 @router.get("/vessels/{vessel_id}")
 async def get_vessel(vessel_id: int):
-    pass
+    try:
+        manager = VesselManager()
+        return await manager.get_vessel(vessel_id)
+    except Exception as e:
+        raise e
 
 
 @router.patch("/vessels/{vessel_id}")
-async def update_vessel(vessel_id: int):
-    pass
+async def update_vessel(vessel_id: int, vessel: VesselUpdate):
+    try:
+        manager = VesselManager(vessel)
+        return await manager.update_vessel(vessel_id)
+    except Exception as e:
+        raise e
 
 
 @router.delete("/vessels/{vessel_id}")
 async def delete_vessel(vessel_id: int):
-    pass
+    try:
+        manager = VesselManager()
+        return await manager.delete_vessel(vessel_id)
+    except Exception as e:
+        raise e
 
 
 # ============================================================
@@ -518,28 +544,48 @@ async def delete_vessel(vessel_id: int):
 # ============================================================
 
 @router.post("/shipments/{shipment_id}/containers")
-async def create_container(shipment_id: int):
-    pass
+async def create_container(shipment_id: int, container: ContainerCreate):
+    try:
+        manager = ContainerManager(container)
+        return await manager.create_container(shipment_id)
+    except Exception as e:
+        raise e
 
 
 @router.get("/shipments/{shipment_id}/containers")
 async def get_containers_by_shipment(shipment_id: int):
-    pass
+    try:
+        manager = ContainerManager()
+        return await manager.get_containers_by_shipment(shipment_id)
+    except Exception as e:
+        raise e
 
 
 @router.get("/containers/{container_id}")
 async def get_container(container_id: int):
-    pass
+    try:
+        manager = ContainerManager()
+        return await manager.get_container(container_id)
+    except Exception as e:
+        raise e
 
 
 @router.patch("/containers/{container_id}")
-async def update_container(container_id: int):
-    pass
+async def update_container(container_id: int, container: ContainerUpdate):
+    try:
+        manager = ContainerManager(container)
+        return await manager.update_container(container_id)
+    except Exception as e:
+        raise e
 
 
 @router.delete("/containers/{container_id}")
 async def delete_container(container_id: int):
-    pass
+    try:
+        manager = ContainerManager()
+        return await manager.delete_container(container_id)
+    except Exception as e:
+        raise e
 
 
 # ============================================================

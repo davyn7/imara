@@ -17,6 +17,10 @@ from app.logistics.schemas import (
     PortCallCreate,
     PortCallUpdate,
     PortCallStatus,
+    VesselCreate,
+    VesselUpdate,
+    ContainerCreate,
+    ContainerUpdate,
 )
 
 
@@ -459,3 +463,97 @@ async def complete_port_call_operations_db(port_call_id: int):
 
 async def mark_port_call_as_sailed_db(port_call_id: int):
     return await _update_port_call_status_db(port_call_id, PortCallStatus.SAILED)
+
+
+# Vessel DB Operations
+
+async def get_vessels_db():
+    response = supabase.table("vessels").select("*").execute()
+    return response.data
+
+
+async def get_vessel_db(vessel_id: int):
+    response = (
+        supabase.table("vessels")
+        .select("*")
+        .eq("id", vessel_id)
+        .execute()
+    )
+    return response.data
+
+
+async def add_vessel_db(vessel: VesselCreate):
+    vessel_data = _serialize(vessel)
+    response = supabase.table("vessels").insert(vessel_data).execute()
+    return response.data
+
+
+async def update_vessel_db(vessel: VesselUpdate, vessel_id: int):
+    vessel_data = vessel.model_dump(mode="json", exclude_unset=True)
+    response = (
+        supabase.table("vessels")
+        .update(vessel_data)
+        .eq("id", vessel_id)
+        .execute()
+    )
+    return response.data
+
+
+async def delete_vessel_db(vessel_id: int):
+    response = (
+        supabase.table("vessels")
+        .delete()
+        .eq("id", vessel_id)
+        .execute()
+    )
+    return response.data
+
+
+# Container DB Operations
+
+async def get_containers_by_shipment_db(shipment_id: int):
+    response = (
+        supabase.table("containers")
+        .select("*")
+        .eq("shipment_id", shipment_id)
+        .execute()
+    )
+    return response.data
+
+
+async def get_container_db(container_id: int):
+    response = (
+        supabase.table("containers")
+        .select("*")
+        .eq("id", container_id)
+        .execute()
+    )
+    return response.data
+
+
+async def add_container_db(shipment_id: int, container: ContainerCreate):
+    container_data = _serialize(container)
+    container_data["shipment_id"] = shipment_id
+    response = supabase.table("containers").insert(container_data).execute()
+    return response.data
+
+
+async def update_container_db(container: ContainerUpdate, container_id: int):
+    container_data = container.model_dump(mode="json", exclude_unset=True)
+    response = (
+        supabase.table("containers")
+        .update(container_data)
+        .eq("id", container_id)
+        .execute()
+    )
+    return response.data
+
+
+async def delete_container_db(container_id: int):
+    response = (
+        supabase.table("containers")
+        .delete()
+        .eq("id", container_id)
+        .execute()
+    )
+    return response.data

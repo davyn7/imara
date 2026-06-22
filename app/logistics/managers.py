@@ -13,6 +13,10 @@ from app.logistics.schemas import (
     PortUpdate,
     PortCallCreate,
     PortCallUpdate,
+    VesselCreate,
+    VesselUpdate,
+    ContainerCreate,
+    ContainerUpdate,
 )
 from app.logistics.db import (
     get_shipments_db,
@@ -63,6 +67,16 @@ from app.logistics.db import (
     start_port_call_operations_db,
     complete_port_call_operations_db,
     mark_port_call_as_sailed_db,
+    get_vessels_db,
+    get_vessel_db,
+    add_vessel_db,
+    update_vessel_db,
+    delete_vessel_db,
+    get_containers_by_shipment_db,
+    get_container_db,
+    add_container_db,
+    update_container_db,
+    delete_container_db,
 )
 
 
@@ -244,3 +258,43 @@ class PortCallManager:
 
     async def mark_port_call_as_sailed(self, port_call_id: int):
         return await mark_port_call_as_sailed_db(port_call_id)
+
+
+class VesselManager:
+    def __init__(self, vessel: VesselCreate | VesselUpdate | None = None):
+        self.vessel = vessel
+
+    async def get_vessels(self):
+        return await get_vessels_db()
+
+    async def get_vessel(self, vessel_id: int):
+        return await get_vessel_db(vessel_id)
+
+    async def create_vessel(self):
+        return await add_vessel_db(self.vessel)
+
+    async def update_vessel(self, vessel_id: int):
+        return await update_vessel_db(self.vessel, vessel_id)
+
+    async def delete_vessel(self, vessel_id: int):
+        return await delete_vessel_db(vessel_id)
+
+
+class ContainerManager:
+    def __init__(self, container: ContainerCreate | ContainerUpdate | None = None):
+        self.container = container
+
+    async def get_containers_by_shipment(self, shipment_id: int):
+        return await get_containers_by_shipment_db(shipment_id)
+
+    async def get_container(self, container_id: int):
+        return await get_container_db(container_id)
+
+    async def create_container(self, shipment_id: int):
+        return await add_container_db(shipment_id, self.container)
+
+    async def update_container(self, container_id: int):
+        return await update_container_db(self.container, container_id)
+
+    async def delete_container(self, container_id: int):
+        return await delete_container_db(container_id)
