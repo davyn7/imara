@@ -9,6 +9,9 @@ from app.logistics.managers import (
     PortCallManager,
     VesselManager,
     ContainerManager,
+    LogisticsEventManager,
+    LogisticsCostManager,
+    DeliveryOrderManager,
 )
 from app.logistics.schemas import (
     ShipmentCreate,
@@ -27,6 +30,12 @@ from app.logistics.schemas import (
     VesselUpdate,
     ContainerCreate,
     ContainerUpdate,
+    LogisticsEventCreate,
+    LogisticsEventUpdate,
+    LogisticsCostCreate,
+    LogisticsCostUpdate,
+    DeliveryOrderCreate,
+    DeliveryOrderUpdate,
 )
 
 router = APIRouter(prefix="/logistics", tags=["Logistics"])
@@ -593,28 +602,51 @@ async def delete_container(container_id: int):
 # ============================================================
 
 @router.post("/shipments/{shipment_id}/events")
-async def create_logistics_event(shipment_id: int):
-    pass
+async def create_logistics_event(
+    shipment_id: int,
+    event: LogisticsEventCreate,
+):
+    try:
+        manager = LogisticsEventManager(event)
+        return await manager.create_logistics_event(shipment_id)
+    except Exception as e:
+        raise e
 
 
 @router.get("/shipments/{shipment_id}/events")
 async def get_logistics_events_by_shipment(shipment_id: int):
-    pass
+    try:
+        manager = LogisticsEventManager()
+        return await manager.get_logistics_events_by_shipment(shipment_id)
+    except Exception as e:
+        raise e
 
 
 @router.get("/events/{event_id}")
 async def get_logistics_event(event_id: int):
-    pass
+    try:
+        manager = LogisticsEventManager()
+        return await manager.get_logistics_event(event_id)
+    except Exception as e:
+        raise e
 
 
 @router.patch("/events/{event_id}")
-async def update_logistics_event(event_id: int):
-    pass
+async def update_logistics_event(event_id: int, event: LogisticsEventUpdate):
+    try:
+        manager = LogisticsEventManager(event)
+        return await manager.update_logistics_event(event_id)
+    except Exception as e:
+        raise e
 
 
 @router.delete("/events/{event_id}")
 async def delete_logistics_event(event_id: int):
-    pass
+    try:
+        manager = LogisticsEventManager()
+        return await manager.delete_logistics_event(event_id)
+    except Exception as e:
+        raise e
 
 
 # ============================================================
@@ -622,38 +654,66 @@ async def delete_logistics_event(event_id: int):
 # ============================================================
 
 @router.post("/shipments/{shipment_id}/costs")
-async def create_logistics_cost(shipment_id: int):
-    pass
+async def create_logistics_cost(shipment_id: int, cost: LogisticsCostCreate):
+    try:
+        manager = LogisticsCostManager(cost)
+        return await manager.create_logistics_cost(shipment_id)
+    except Exception as e:
+        raise e
 
 
 @router.get("/shipments/{shipment_id}/costs")
 async def get_logistics_costs_by_shipment(shipment_id: int):
-    pass
+    try:
+        manager = LogisticsCostManager()
+        return await manager.get_logistics_costs_by_shipment(shipment_id)
+    except Exception as e:
+        raise e
 
 
 @router.get("/costs/{cost_id}")
 async def get_logistics_cost(cost_id: int):
-    pass
+    try:
+        manager = LogisticsCostManager()
+        return await manager.get_logistics_cost(cost_id)
+    except Exception as e:
+        raise e
 
 
 @router.patch("/costs/{cost_id}")
-async def update_logistics_cost(cost_id: int):
-    pass
+async def update_logistics_cost(cost_id: int, cost: LogisticsCostUpdate):
+    try:
+        manager = LogisticsCostManager(cost)
+        return await manager.update_logistics_cost(cost_id)
+    except Exception as e:
+        raise e
 
 
 @router.delete("/costs/{cost_id}")
 async def delete_logistics_cost(cost_id: int):
-    pass
+    try:
+        manager = LogisticsCostManager()
+        return await manager.delete_logistics_cost(cost_id)
+    except Exception as e:
+        raise e
 
 
 @router.post("/costs/{cost_id}/mark-actual")
 async def mark_logistics_cost_as_actual(cost_id: int):
-    pass
+    try:
+        manager = LogisticsCostManager()
+        return await manager.mark_logistics_cost_as_actual(cost_id)
+    except Exception as e:
+        raise e
 
 
 @router.post("/costs/{cost_id}/mark-paid")
 async def mark_logistics_cost_as_paid(cost_id: int):
-    pass
+    try:
+        manager = LogisticsCostManager()
+        return await manager.mark_logistics_cost_as_paid(cost_id)
+    except Exception as e:
+        raise e
 
 
 # ============================================================
@@ -661,43 +721,81 @@ async def mark_logistics_cost_as_paid(cost_id: int):
 # ============================================================
 
 @router.post("/shipments/{shipment_id}/delivery-orders")
-async def create_delivery_order(shipment_id: int):
-    pass
+async def create_delivery_order(
+    shipment_id: int,
+    delivery_order: DeliveryOrderCreate,
+):
+    try:
+        manager = DeliveryOrderManager(delivery_order)
+        return await manager.create_delivery_order(shipment_id)
+    except Exception as e:
+        raise e
 
 
 @router.get("/shipments/{shipment_id}/delivery-orders")
 async def get_delivery_orders_by_shipment(shipment_id: int):
-    pass
+    try:
+        manager = DeliveryOrderManager()
+        return await manager.get_delivery_orders_by_shipment(shipment_id)
+    except Exception as e:
+        raise e
 
 
 @router.get("/delivery-orders/{delivery_order_id}")
 async def get_delivery_order(delivery_order_id: int):
-    pass
+    try:
+        manager = DeliveryOrderManager()
+        return await manager.get_delivery_order(delivery_order_id)
+    except Exception as e:
+        raise e
 
 
 @router.patch("/delivery-orders/{delivery_order_id}")
-async def update_delivery_order(delivery_order_id: int):
-    pass
+async def update_delivery_order(
+    delivery_order_id: int,
+    delivery_order: DeliveryOrderUpdate,
+):
+    try:
+        manager = DeliveryOrderManager(delivery_order)
+        return await manager.update_delivery_order(delivery_order_id)
+    except Exception as e:
+        raise e
 
 
 @router.delete("/delivery-orders/{delivery_order_id}")
 async def delete_delivery_order(delivery_order_id: int):
-    pass
+    try:
+        manager = DeliveryOrderManager()
+        return await manager.delete_delivery_order(delivery_order_id)
+    except Exception as e:
+        raise e
 
 
 @router.post("/delivery-orders/{delivery_order_id}/issue")
 async def issue_delivery_order(delivery_order_id: int):
-    pass
+    try:
+        manager = DeliveryOrderManager()
+        return await manager.issue_delivery_order(delivery_order_id)
+    except Exception as e:
+        raise e
 
 
 @router.post("/delivery-orders/{delivery_order_id}/mark-delivered")
 async def mark_delivery_order_as_delivered(delivery_order_id: int):
-    pass
+    try:
+        manager = DeliveryOrderManager()
+        return await manager.mark_delivery_order_as_delivered(delivery_order_id)
+    except Exception as e:
+        raise e
 
 
 @router.post("/delivery-orders/{delivery_order_id}/cancel")
 async def cancel_delivery_order(delivery_order_id: int):
-    pass
+    try:
+        manager = DeliveryOrderManager()
+        return await manager.cancel_delivery_order(delivery_order_id)
+    except Exception as e:
+        raise e
 
 
 # ============================================================

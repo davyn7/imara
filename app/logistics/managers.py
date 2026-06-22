@@ -17,6 +17,12 @@ from app.logistics.schemas import (
     VesselUpdate,
     ContainerCreate,
     ContainerUpdate,
+    LogisticsEventCreate,
+    LogisticsEventUpdate,
+    LogisticsCostCreate,
+    LogisticsCostUpdate,
+    DeliveryOrderCreate,
+    DeliveryOrderUpdate,
 )
 from app.logistics.db import (
     get_shipments_db,
@@ -77,6 +83,26 @@ from app.logistics.db import (
     add_container_db,
     update_container_db,
     delete_container_db,
+    get_logistics_events_by_shipment_db,
+    get_logistics_event_db,
+    add_logistics_event_db,
+    update_logistics_event_db,
+    delete_logistics_event_db,
+    get_logistics_costs_by_shipment_db,
+    get_logistics_cost_db,
+    add_logistics_cost_db,
+    update_logistics_cost_db,
+    delete_logistics_cost_db,
+    mark_logistics_cost_as_actual_db,
+    mark_logistics_cost_as_paid_db,
+    get_delivery_orders_by_shipment_db,
+    get_delivery_order_db,
+    add_delivery_order_db,
+    update_delivery_order_db,
+    delete_delivery_order_db,
+    issue_delivery_order_db,
+    mark_delivery_order_as_delivered_db,
+    cancel_delivery_order_db,
 )
 
 
@@ -298,3 +324,87 @@ class ContainerManager:
 
     async def delete_container(self, container_id: int):
         return await delete_container_db(container_id)
+
+
+class LogisticsEventManager:
+    def __init__(
+        self,
+        event: LogisticsEventCreate | LogisticsEventUpdate | None = None,
+    ):
+        self.event = event
+
+    async def get_logistics_events_by_shipment(self, shipment_id: int):
+        return await get_logistics_events_by_shipment_db(shipment_id)
+
+    async def get_logistics_event(self, event_id: int):
+        return await get_logistics_event_db(event_id)
+
+    async def create_logistics_event(self, shipment_id: int):
+        return await add_logistics_event_db(shipment_id, self.event)
+
+    async def update_logistics_event(self, event_id: int):
+        return await update_logistics_event_db(self.event, event_id)
+
+    async def delete_logistics_event(self, event_id: int):
+        return await delete_logistics_event_db(event_id)
+
+
+class LogisticsCostManager:
+    def __init__(
+        self,
+        cost: LogisticsCostCreate | LogisticsCostUpdate | None = None,
+    ):
+        self.cost = cost
+
+    async def get_logistics_costs_by_shipment(self, shipment_id: int):
+        return await get_logistics_costs_by_shipment_db(shipment_id)
+
+    async def get_logistics_cost(self, cost_id: int):
+        return await get_logistics_cost_db(cost_id)
+
+    async def create_logistics_cost(self, shipment_id: int):
+        return await add_logistics_cost_db(shipment_id, self.cost)
+
+    async def update_logistics_cost(self, cost_id: int):
+        return await update_logistics_cost_db(self.cost, cost_id)
+
+    async def delete_logistics_cost(self, cost_id: int):
+        return await delete_logistics_cost_db(cost_id)
+
+    async def mark_logistics_cost_as_actual(self, cost_id: int):
+        return await mark_logistics_cost_as_actual_db(cost_id)
+
+    async def mark_logistics_cost_as_paid(self, cost_id: int):
+        return await mark_logistics_cost_as_paid_db(cost_id)
+
+
+class DeliveryOrderManager:
+    def __init__(
+        self,
+        delivery_order: DeliveryOrderCreate | DeliveryOrderUpdate | None = None,
+    ):
+        self.delivery_order = delivery_order
+
+    async def get_delivery_orders_by_shipment(self, shipment_id: int):
+        return await get_delivery_orders_by_shipment_db(shipment_id)
+
+    async def get_delivery_order(self, delivery_order_id: int):
+        return await get_delivery_order_db(delivery_order_id)
+
+    async def create_delivery_order(self, shipment_id: int):
+        return await add_delivery_order_db(shipment_id, self.delivery_order)
+
+    async def update_delivery_order(self, delivery_order_id: int):
+        return await update_delivery_order_db(self.delivery_order, delivery_order_id)
+
+    async def delete_delivery_order(self, delivery_order_id: int):
+        return await delete_delivery_order_db(delivery_order_id)
+
+    async def issue_delivery_order(self, delivery_order_id: int):
+        return await issue_delivery_order_db(delivery_order_id)
+
+    async def mark_delivery_order_as_delivered(self, delivery_order_id: int):
+        return await mark_delivery_order_as_delivered_db(delivery_order_id)
+
+    async def cancel_delivery_order(self, delivery_order_id: int):
+        return await cancel_delivery_order_db(delivery_order_id)

@@ -1,5 +1,7 @@
 # app/logistics/db.py
 
+from datetime import date
+
 from app.connection import supabase
 from app.logistics.schemas import (
     ShipmentCreate,
@@ -21,6 +23,13 @@ from app.logistics.schemas import (
     VesselUpdate,
     ContainerCreate,
     ContainerUpdate,
+    LogisticsEventCreate,
+    LogisticsEventUpdate,
+    LogisticsCostCreate,
+    LogisticsCostUpdate,
+    DeliveryOrderCreate,
+    DeliveryOrderUpdate,
+    DeliveryOrderStatus,
 )
 
 
@@ -139,20 +148,8 @@ async def get_shipment_overview_db(shipment_id: int):
 
     cargo = await get_cargo_by_shipment_db(shipment_id)
     legs = await get_shipment_legs_db(shipment_id)
-    events = (
-        supabase.table("logistics_events")
-        .select("*")
-        .eq("shipment_id", shipment_id)
-        .execute()
-        .data
-    )
-    costs = (
-        supabase.table("logistics_costs")
-        .select("*")
-        .eq("shipment_id", shipment_id)
-        .execute()
-        .data
-    )
+    events = await get_logistics_events_by_shipment_db(shipment_id)
+    costs = await get_logistics_costs_by_shipment_db(shipment_id)
 
     return {
         "shipment": shipment_data[0],
@@ -557,3 +554,216 @@ async def delete_container_db(container_id: int):
         .execute()
     )
     return response.data
+
+
+# Logistics Event DB Operations
+
+async def get_logistics_events_by_shipment_db(shipment_id: int):
+    response = (
+        supabase.table("logistics_events")
+        .select("*")
+        .eq("shipment_id", shipment_id)
+        .execute()
+    )
+    return response.data
+
+
+async def get_logistics_event_db(event_id: int):
+    response = (
+        supabase.table("logistics_events")
+        .select("*")
+        .eq("id", event_id)
+        .execute()
+    )
+    return response.data
+
+
+async def add_logistics_event_db(shipment_id: int, event: LogisticsEventCreate):
+    event_data = _serialize(event)
+    event_data["shipment_id"] = shipment_id
+    response = supabase.table("logistics_events").insert(event_data).execute()
+    return response.data
+
+
+async def update_logistics_event_db(event: LogisticsEventUpdate, event_id: int):
+    event_data = event.model_dump(mode="json", exclude_unset=True)
+    response = (
+        supabase.table("logistics_events")
+        .update(event_data)
+        .eq("id", event_id)
+        .execute()
+    )
+    return response.data
+
+
+async def delete_logistics_event_db(event_id: int):
+    response = (
+        supabase.table("logistics_events")
+        .delete()
+        .eq("id", event_id)
+        .execute()
+    )
+    return response.data
+
+
+# Logistics Cost DB Operations
+
+async def get_logistics_costs_by_shipment_db(shipment_id: int):
+    response = (
+        supabase.table("logistics_costs")
+        .select("*")
+        .eq("shipment_id", shipment_id)
+        .execute()
+    )
+    return response.data
+
+
+async def get_logistics_cost_db(cost_id: int):
+    response = (
+        supabase.table("logistics_costs")
+        .select("*")
+        .eq("id", cost_id)
+        .execute()
+    )
+    return response.data
+
+
+async def add_logistics_cost_db(shipment_id: int, cost: LogisticsCostCreate):
+    cost_data = _serialize(cost)
+    cost_data["shipment_id"] = shipment_id
+    response = supabase.table("logistics_costs").insert(cost_data).execute()
+    return response.data
+
+
+async def update_logistics_cost_db(cost: LogisticsCostUpdate, cost_id: int):
+    cost_data = cost.model_dump(mode="json", exclude_unset=True)
+    response = (
+        supabase.table("logistics_costs")
+        .update(cost_data)
+        .eq("id", cost_id)
+        .execute()
+    )
+    return response.data
+
+
+async def delete_logistics_cost_db(cost_id: int):
+    response = (
+        supabase.table("logistics_costs")
+        .delete()
+        .eq("id", cost_id)
+        .execute()
+    )
+    return response.data
+
+
+async def mark_logistics_cost_as_actual_db(cost_id: int):
+    response = (
+        supabase.table("logistics_costs")
+        .update({"is_estimated": False})
+        .eq("id", cost_id)
+        .execute()
+    )
+    return response.data
+
+
+async def mark_logistics_cost_as_paid_db(cost_id: int):
+    response = (
+        supabase.table("logistics_costs")
+        .update({"paid_date": date.today().isoformat()})
+        .eq("id", cost_id)
+        .execute()
+    )
+    return response.data
+
+
+async def _update_delivery_order_status_db(
+    delivery_order_id: int,
+    status: DeliveryOrderStatus,
+    extra_fields: dict | None = None,
+):
+    update_data = {"status": status.value}
+    if extra_fields:
+        update_data.update(extra_fields)
+    response = (
+        supabase.table("delivery_orders")
+        .update(update_data)
+        .eq("id", delivery_order_id)
+        .execute()
+    )
+    return response.data
+
+
+# Delivery Order DB Operations
+
+async def get_delivery_orders_by_shipment_db(shipment_id: int):
+    response = (
+        supabase.table("delivery_orders")
+        .select("*")
+        .eq("shipment_id", shipment_id)
+        .execute()
+    )
+    return response.data
+
+
+async def get_delivery_order_db(delivery_order_id: int):
+    response = (
+        supabase.table("delivery_orders")
+        .select("*")
+        .eq("id", delivery_order_id)
+        .execute()
+    )
+    return response.data
+
+
+async def add_delivery_order_db(shipment_id: int, delivery_order: DeliveryOrderCreate):
+    delivery_order_data = _serialize(delivery_order)
+    delivery_order_data["shipment_id"] = shipment_id
+    response = supabase.table("delivery_orders").insert(delivery_order_data).execute()
+    return response.data
+
+
+async def update_delivery_order_db(
+    delivery_order: DeliveryOrderUpdate,
+    delivery_order_id: int,
+):
+    delivery_order_data = delivery_order.model_dump(mode="json", exclude_unset=True)
+    response = (
+        supabase.table("delivery_orders")
+        .update(delivery_order_data)
+        .eq("id", delivery_order_id)
+        .execute()
+    )
+    return response.data
+
+
+async def delete_delivery_order_db(delivery_order_id: int):
+    response = (
+        supabase.table("delivery_orders")
+        .delete()
+        .eq("id", delivery_order_id)
+        .execute()
+    )
+    return response.data
+
+
+async def issue_delivery_order_db(delivery_order_id: int):
+    return await _update_delivery_order_status_db(
+        delivery_order_id,
+        DeliveryOrderStatus.ISSUED,
+        {"issued_date": date.today().isoformat()},
+    )
+
+
+async def mark_delivery_order_as_delivered_db(delivery_order_id: int):
+    return await _update_delivery_order_status_db(
+        delivery_order_id,
+        DeliveryOrderStatus.DELIVERED,
+        {"delivered_date": date.today().isoformat()},
+    )
+
+
+async def cancel_delivery_order_db(delivery_order_id: int):
+    return await _update_delivery_order_status_db(
+        delivery_order_id,
+        DeliveryOrderStatus.CANCELLED,
+    )
