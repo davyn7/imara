@@ -4,7 +4,6 @@ from app.schemas import (
     CompanyBase,
     BankAccountBase,
     BrokerageDealBase,
-    ShipmentBase,
     EquityRoundBase,
     ShareholderBase,
     ShareTransactionBase
@@ -93,34 +92,6 @@ async def delete_brokerage_deal_db(brokerage_deal_id: UUID):
 
 async def delete_brokerage_deals_db():
     response = supabase.table("brokerage_deals").delete().neq("id", "00000000-0000-0000-0000-000000000000").execute()
-    return response.data
-
-# Shipment DB Operations
-
-async def get_shipments_db():
-    response = supabase.table("shipments").select("*").execute()
-    return response.data
-
-async def get_shipment_db(shipment_id: UUID):
-    response = supabase.table("shipments").select("*").eq("id", shipment_id).execute()
-    return response.data
-
-async def add_shipment_db(shipment: ShipmentBase):
-    shipment_data = shipment.model_dump(mode="json")
-    response = supabase.table("shipments").insert(shipment_data).execute()
-    return response.data
-
-async def update_shipment_db(shipment: ShipmentBase, shipment_id: UUID):
-    shipment_data = shipment.model_dump(mode="json", exclude_unset=True)
-    response = supabase.table("shipments").update(shipment_data).eq("id", shipment_id).execute()
-    return response.data
-
-async def delete_shipment_db(shipment_id: UUID):
-    response = supabase.table("shipments").delete().eq("id", shipment_id).execute()
-    return response.data
-
-async def delete_shipments_db():
-    response = supabase.table("shipments").delete().neq("id", "00000000-0000-0000-0000-000000000000").execute()
     return response.data
 
 # Shareholder DB Operations

@@ -6,7 +6,6 @@ from app.managers import (
     CompanyManager,
     BankAccountManager,
     BrokerageDealManager,
-    ShipmentManager,
     ShareholderManager,
     EquityRoundManager,
     ShareTransactionManager
@@ -16,7 +15,6 @@ from app.schemas import (
     CompanyBase,
     BankAccountBase,
     BrokerageDealBase,
-    ShipmentBase,
     EquityRoundBase,
     ShareholderBase,
     ShareTransactionBase
@@ -182,56 +180,6 @@ async def delete_brokerage_deals():
     try:
         manager = BrokerageDealManager(None)
         return await manager.delete_brokerage_deals()
-    except Exception as e:
-        raise e
-
-# Shipment Routers
-
-@router.get("/shipments")
-async def get_shipments():
-    try:
-        manager = ShipmentManager(None)
-        return await manager.get_shipments()
-    except Exception as e:
-        raise e
-
-@router.get("/shipments/{shipment_id}")
-async def get_shipment(shipment_id: UUID):
-    try:
-        manager = ShipmentManager(None)
-        return await manager.get_shipment(shipment_id)
-    except Exception as e:
-        raise e
-
-@router.post("/add_shipment")
-async def add_shipment(shipment: ShipmentBase):
-    try:
-        manager = ShipmentManager(shipment)
-        return await manager.add_shipment()
-    except Exception as e:
-        raise e
-
-@router.put("/update_shipment/{shipment_id}")
-async def update_shipment(shipment_id: UUID, shipment: ShipmentBase):
-    try:
-        manager = ShipmentManager(shipment)
-        return await manager.update_shipment(shipment_id)
-    except Exception as e:
-        raise e
-
-@router.delete("/delete_shipment/{shipment_id}")
-async def delete_shipment(shipment_id: UUID):
-    try:
-        manager = ShipmentManager(None)
-        return await manager.delete_shipment(shipment_id)
-    except Exception as e:
-        raise e
-
-@router.delete("/delete_shipments")
-async def delete_shipments():
-    try:
-        manager = ShipmentManager(None)
-        return await manager.delete_shipments()
     except Exception as e:
         raise e
 

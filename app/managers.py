@@ -5,7 +5,6 @@ from app.schemas import (
     CompanyBase,
     BankAccountBase,
     BrokerageDealBase,
-    ShipmentBase,
     EquityRoundBase,
     ShareholderBase,
     ShareTransactionBase
@@ -29,12 +28,6 @@ from app.db import (
     update_brokerage_deal_db,
     delete_brokerage_deal_db,
     delete_brokerage_deals_db,
-    get_shipments_db,
-    get_shipment_db,
-    add_shipment_db,
-    update_shipment_db,
-    delete_shipment_db,
-    delete_shipments_db,
     get_shareholders_db,
     get_shareholder_db,
     add_shareholder_db,
@@ -133,30 +126,6 @@ class BrokerageDealManager:
     
     async def delete_brokerage_deals(self):
         return await delete_brokerage_deals_db()
-
-# Shipment Manager
-# TODO: Implement Shipment Manager
-class ShipmentManager:
-    def __init__(self, shipment: ShipmentBase):
-        self.shipment = shipment
-
-    async def get_shipments(self):
-        return await get_shipments_db()
-
-    async def get_shipment(self, shipment_id: UUID):
-        return await get_shipment_db(shipment_id)
-
-    async def add_shipment(self):
-        return await add_shipment_db(self.shipment)
-    
-    async def update_shipment(self, shipment_id: UUID):
-        return await update_shipment_db(self.shipment, shipment_id)
-    
-    async def delete_shipment(self, shipment_id: UUID):
-        return await delete_shipment_db(shipment_id)
-    
-    async def delete_shipments(self):
-        return await delete_shipments_db()
 
 # Shareholder Manager
 
