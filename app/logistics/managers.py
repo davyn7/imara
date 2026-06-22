@@ -7,6 +7,8 @@ from app.logistics.schemas import (
     CargoUpdate,
     CargoLoadedQuantityUpdate,
     CargoDischargedQuantityUpdate,
+    ShipmentLegCreate,
+    ShipmentLegUpdate,
 )
 from app.logistics.db import (
     get_shipments_db,
@@ -33,6 +35,15 @@ from app.logistics.db import (
     delete_cargo_db,
     update_cargo_loaded_quantity_db,
     update_cargo_discharged_quantity_db,
+    get_shipment_legs_db,
+    get_shipment_leg_db,
+    add_shipment_leg_db,
+    update_shipment_leg_db,
+    delete_shipment_leg_db,
+    start_shipment_leg_db,
+    complete_shipment_leg_db,
+    delay_shipment_leg_db,
+    cancel_shipment_leg_db,
 )
 
 
@@ -124,3 +135,38 @@ class CargoManager:
         update: CargoDischargedQuantityUpdate,
     ):
         return await update_cargo_discharged_quantity_db(cargo_id, update)
+
+
+class ShipmentLegManager:
+    def __init__(
+        self,
+        shipment_leg: ShipmentLegCreate | ShipmentLegUpdate | None = None,
+    ):
+        self.shipment_leg = shipment_leg
+
+    async def get_shipment_legs(self, shipment_id: int):
+        return await get_shipment_legs_db(shipment_id)
+
+    async def get_shipment_leg(self, shipment_leg_id: int):
+        return await get_shipment_leg_db(shipment_leg_id)
+
+    async def create_shipment_leg(self, shipment_id: int):
+        return await add_shipment_leg_db(shipment_id, self.shipment_leg)
+
+    async def update_shipment_leg(self, shipment_leg_id: int):
+        return await update_shipment_leg_db(self.shipment_leg, shipment_leg_id)
+
+    async def delete_shipment_leg(self, shipment_leg_id: int):
+        return await delete_shipment_leg_db(shipment_leg_id)
+
+    async def start_shipment_leg(self, shipment_leg_id: int):
+        return await start_shipment_leg_db(shipment_leg_id)
+
+    async def complete_shipment_leg(self, shipment_leg_id: int):
+        return await complete_shipment_leg_db(shipment_leg_id)
+
+    async def delay_shipment_leg(self, shipment_leg_id: int):
+        return await delay_shipment_leg_db(shipment_leg_id)
+
+    async def cancel_shipment_leg(self, shipment_leg_id: int):
+        return await cancel_shipment_leg_db(shipment_leg_id)

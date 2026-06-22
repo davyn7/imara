@@ -1,7 +1,7 @@
 # app/logistics/router.py
 
 from fastapi import APIRouter
-from app.logistics.managers import ShipmentManager, CargoManager
+from app.logistics.managers import ShipmentManager, CargoManager, ShipmentLegManager
 from app.logistics.schemas import (
     ShipmentCreate,
     ShipmentUpdate,
@@ -9,6 +9,8 @@ from app.logistics.schemas import (
     CargoUpdate,
     CargoLoadedQuantityUpdate,
     CargoDischargedQuantityUpdate,
+    ShipmentLegCreate,
+    ShipmentLegUpdate,
 )
 
 router = APIRouter(prefix="/logistics", tags=["Logistics"])
@@ -249,48 +251,84 @@ async def update_cargo_discharged_quantity(
 # ============================================================
 
 @router.post("/shipments/{shipment_id}/legs")
-async def create_shipment_leg(shipment_id: int):
-    pass
+async def create_shipment_leg(shipment_id: int, shipment_leg: ShipmentLegCreate):
+    try:
+        manager = ShipmentLegManager(shipment_leg)
+        return await manager.create_shipment_leg(shipment_id)
+    except Exception as e:
+        raise e
 
 
 @router.get("/shipments/{shipment_id}/legs")
 async def get_shipment_legs(shipment_id: int):
-    pass
+    try:
+        manager = ShipmentLegManager()
+        return await manager.get_shipment_legs(shipment_id)
+    except Exception as e:
+        raise e
 
 
 @router.get("/legs/{shipment_leg_id}")
 async def get_shipment_leg(shipment_leg_id: int):
-    pass
+    try:
+        manager = ShipmentLegManager()
+        return await manager.get_shipment_leg(shipment_leg_id)
+    except Exception as e:
+        raise e
 
 
 @router.patch("/legs/{shipment_leg_id}")
-async def update_shipment_leg(shipment_leg_id: int):
-    pass
+async def update_shipment_leg(shipment_leg_id: int, shipment_leg: ShipmentLegUpdate):
+    try:
+        manager = ShipmentLegManager(shipment_leg)
+        return await manager.update_shipment_leg(shipment_leg_id)
+    except Exception as e:
+        raise e
 
 
 @router.delete("/legs/{shipment_leg_id}")
 async def delete_shipment_leg(shipment_leg_id: int):
-    pass
+    try:
+        manager = ShipmentLegManager()
+        return await manager.delete_shipment_leg(shipment_leg_id)
+    except Exception as e:
+        raise e
 
 
 @router.post("/legs/{shipment_leg_id}/start")
 async def start_shipment_leg(shipment_leg_id: int):
-    pass
+    try:
+        manager = ShipmentLegManager()
+        return await manager.start_shipment_leg(shipment_leg_id)
+    except Exception as e:
+        raise e
 
 
 @router.post("/legs/{shipment_leg_id}/complete")
 async def complete_shipment_leg(shipment_leg_id: int):
-    pass
+    try:
+        manager = ShipmentLegManager()
+        return await manager.complete_shipment_leg(shipment_leg_id)
+    except Exception as e:
+        raise e
 
 
 @router.post("/legs/{shipment_leg_id}/delay")
 async def delay_shipment_leg(shipment_leg_id: int):
-    pass
+    try:
+        manager = ShipmentLegManager()
+        return await manager.delay_shipment_leg(shipment_leg_id)
+    except Exception as e:
+        raise e
 
 
 @router.post("/legs/{shipment_leg_id}/cancel")
 async def cancel_shipment_leg(shipment_leg_id: int):
-    pass
+    try:
+        manager = ShipmentLegManager()
+        return await manager.cancel_shipment_leg(shipment_leg_id)
+    except Exception as e:
+        raise e
 
 
 # ============================================================

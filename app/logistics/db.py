@@ -9,6 +9,9 @@ from app.logistics.schemas import (
     CargoUpdate,
     CargoLoadedQuantityUpdate,
     CargoDischargedQuantityUpdate,
+    ShipmentLegCreate,
+    ShipmentLegUpdate,
+    ShipmentLegStatus,
 )
 
 
@@ -126,13 +129,7 @@ async def get_shipment_overview_db(shipment_id: int):
         return None
 
     cargo = await get_cargo_by_shipment_db(shipment_id)
-    legs = (
-        supabase.table("shipment_legs")
-        .select("*")
-        .eq("shipment_id", shipment_id)
-        .execute()
-        .data
-    )
+    legs = await get_shipment_legs_db(shipment_id)
     events = (
         supabase.table("logistics_events")
         .select("*")
@@ -233,3 +230,97 @@ async def update_cargo_discharged_quantity_db(
         .execute()
     )
     return response.data
+
+
+async def _update_shipment_leg_status_db(
+    shipment_leg_id: int,
+    status: ShipmentLegStatus,
+):
+    response = (
+        supabase.table("shipment_legs")
+        .update({"status": status.value})
+        .eq("id", shipment_leg_id)
+        .execute()
+    )
+    return response.data
+
+
+# Shipment Leg DB Operations
+
+async def get_shipment_legs_db(shipment_id: int):
+    response = (
+        supabase.table("shipment_legs")
+        .select("*")
+        .eq("shipment_id", shipment_id)
+        .execute()
+    )
+    return response.data
+
+
+async def get_shipment_leg_db(shipment_leg_id: int):
+    response = (
+        supabase.table("shipment_legs")
+        .select("*")
+        .eq("id", shipment_leg_id)
+        .execute()
+    )
+    return response.data
+
+
+async def add_shipment_leg_db(shipment_id: int, shipment_leg: ShipmentLegCreate):
+    shipment_leg_data = _serialize(shipment_leg)
+    shipment_leg_data["shipment_id"] = shipment_id
+    response = supabase.table("shipment_legs").insert(shipment_leg_data).execute()
+    return response.data
+
+
+async def update_shipment_leg_db(
+    shipment_leg: ShipmentLegUpdate,
+    shipment_leg_id: int,
+):
+    shipment_leg_data = shipment_leg.model_dump(mode="json", exclude_unset=True)
+    response = (
+        supabase.table("shipment_legs")
+        .update(shipment_leg_data)
+        .eq("id", shipment_leg_id)
+        .execute()
+    )
+    return response.data
+
+
+async def delete_shipment_leg_db(shipment_leg_id: int):
+    response = (
+        supabase.table("shipment_legs")
+        .delete()
+        .eq("id", shipment_leg_id)
+        .execute()
+    )
+    return response.data
+
+
+async def start_shipment_leg_db(shipment_leg_id: int):
+    return await _update_shipment_leg_status_db(
+        shipment_leg_id,
+        ShipmentLegStatus.IN_PROGRESS,
+    )
+
+
+async def complete_shipment_leg_db(shipment_leg_id: int):
+    return await _update_shipment_leg_status_db(
+        shipment_leg_id,
+        ShipmentLegStatus.COMPLETED,
+    )
+
+
+async def delay_shipment_leg_db(shipment_leg_id: int):
+    return await _update_shipment_leg_status_db(
+        shipment_leg_id,
+        ShipmentLegStatus.DELAYED,
+    )
+
+
+async def cancel_shipment_leg_db(shipment_leg_id: int):
+    return await _update_shipment_leg_status_db(
+        shipment_leg_id,
+        ShipmentLegStatus.CANCELLED,
+    )
