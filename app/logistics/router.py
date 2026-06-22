@@ -1,5 +1,7 @@
 # app/logistics/router.py
 
+from datetime import date
+
 from fastapi import APIRouter, Query
 from app.logistics.managers import (
     ShipmentManager,
@@ -78,6 +80,33 @@ async def get_shipment_overview(shipment_id: int):
     try:
         manager = ShipmentManager()
         return await manager.get_shipment_overview(shipment_id)
+    except Exception as e:
+        raise e
+
+
+@router.get("/shipments/{shipment_id}/costs/summary")
+async def get_shipment_costs_summary(shipment_id: int):
+    try:
+        manager = LogisticsSummaryManager()
+        return await manager.get_shipment_costs_summary(shipment_id)
+    except Exception as e:
+        raise e
+
+
+@router.get("/shipments/{shipment_id}/legs/summary")
+async def get_shipment_legs_summary(shipment_id: int):
+    try:
+        manager = LogisticsSummaryManager()
+        return await manager.get_shipment_legs_summary(shipment_id)
+    except Exception as e:
+        raise e
+
+
+@router.get("/shipments/{shipment_id}/settlement-status")
+async def get_shipment_settlement_status(shipment_id: int):
+    try:
+        manager = LogisticsSummaryManager()
+        return await manager.get_shipment_settlement_status(shipment_id)
     except Exception as e:
         raise e
 
@@ -853,5 +882,98 @@ async def get_trade_logistics_summary(trade_id: int):
     try:
         manager = LogisticsSummaryManager()
         return await manager.get_trade_logistics_summary(trade_id)
+    except Exception as e:
+        raise e
+
+
+@router.get("/summary/logistics-costs")
+async def get_logistics_costs_portfolio_summary(
+    trade_id: int | None = Query(None),
+    shipment_id: int | None = Query(None),
+    from_date: date | None = Query(None),
+    to_date: date | None = Query(None),
+):
+    try:
+        manager = LogisticsSummaryManager()
+        return await manager.get_logistics_costs_portfolio_summary(
+            trade_id,
+            shipment_id,
+            from_date,
+            to_date,
+        )
+    except Exception as e:
+        raise e
+
+
+@router.get("/summary/open-delivery-orders")
+async def get_open_delivery_orders_summary(
+    trade_id: int | None = Query(None),
+):
+    try:
+        manager = LogisticsSummaryManager()
+        return await manager.get_open_delivery_orders_summary(trade_id)
+    except Exception as e:
+        raise e
+
+
+@router.get("/summary/cargo-loading-progress")
+async def get_cargo_loading_progress_summary(
+    trade_id: int | None = Query(None),
+):
+    try:
+        manager = LogisticsSummaryManager()
+        return await manager.get_cargo_loading_progress_summary(trade_id)
+    except Exception as e:
+        raise e
+
+
+@router.get("/summary/port-call-bottlenecks")
+async def get_port_call_bottlenecks_summary(
+    days_threshold: int = Query(2, ge=1),
+    trade_id: int | None = Query(None),
+):
+    try:
+        manager = LogisticsSummaryManager()
+        return await manager.get_port_call_bottlenecks_summary(
+            days_threshold,
+            trade_id,
+        )
+    except Exception as e:
+        raise e
+
+
+@router.get("/summary/trade-freight-exposure/{trade_id}")
+async def get_trade_freight_exposure_summary(trade_id: int):
+    try:
+        manager = LogisticsSummaryManager()
+        return await manager.get_trade_freight_exposure_summary(trade_id)
+    except Exception as e:
+        raise e
+
+
+@router.get("/summary/departures-calendar")
+async def get_departures_calendar_summary(
+    from_date: date = Query(...),
+    to_date: date = Query(...),
+    trade_id: int | None = Query(None),
+):
+    try:
+        manager = LogisticsSummaryManager()
+        return await manager.get_departures_calendar_summary(
+            from_date,
+            to_date,
+            trade_id,
+        )
+    except Exception as e:
+        raise e
+
+
+@router.get("/summary/cost-forecast")
+async def get_cost_forecast_summary(
+    trade_id: int | None = Query(None),
+):
+    try:
+        manager = LogisticsSummaryManager()
+        return await manager.get_cost_forecast_summary(trade_id)
     except Exception as e:
         raise e

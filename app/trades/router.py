@@ -1,6 +1,7 @@
 # app/trades/router.py
 
 from fastapi import APIRouter, Query
+from app.logistics.managers import LogisticsSummaryManager
 from app.trades.managers import (
     TradeManager,
     TradeLegManager,
@@ -489,6 +490,15 @@ async def get_trade_treasury_cashflow_summary(trade_id: int):
     try:
         manager = TradeSummaryManager()
         return await manager.get_trade_treasury_cashflow_summary(trade_id)
+    except Exception as e:
+        raise e
+
+
+@router.get("/{trade_id}/logistics-status")
+async def get_trade_logistics_status(trade_id: int):
+    try:
+        manager = LogisticsSummaryManager()
+        return await manager.get_trade_logistics_status(trade_id)
     except Exception as e:
         raise e
 

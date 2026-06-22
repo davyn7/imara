@@ -1,7 +1,7 @@
 # app/logistics/db.py
 
 from collections import Counter
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta
 from decimal import Decimal
 
 from app.connection import supabase
@@ -57,9 +57,44 @@ def _amount_in_base(record: dict) -> Decimal:
 def _parse_date(value) -> date | None:
     if value is None:
         return None
-    if isinstance(value, date):
+    if isinstance(value, date) and not isinstance(value, datetime):
         return value
+    if isinstance(value, datetime):
+        return value.date()
     return date.fromisoformat(str(value)[:10])
+
+
+def _parse_datetime(value) -> datetime | None:
+    if value is None:
+        return None
+    if isinstance(value, datetime):
+        return value
+    text = str(value)
+    if text.endswith("Z"):
+        text = text[:-1] + "+00:00"
+    return datetime.fromisoformat(text)
+
+
+FREIGHT_CATEGORY = "freight"
+
+OPEN_DELIVERY_ORDER_STATUSES = {
+    DeliveryOrderStatus.DRAFT.value,
+    DeliveryOrderStatus.ISSUED.value,
+    DeliveryOrderStatus.PARTIALLY_DELIVERED.value,
+}
+
+BOTTLENECK_PORT_CALL_STATUSES = {
+    PortCallStatus.BERTHED.value,
+    PortCallStatus.OPERATIONS_STARTED.value,
+}
+
+IN_TRANSIT_SHIPMENT_STATUSES = {
+    ShipmentStatus.LOADED.value,
+    ShipmentStatus.IN_TRANSIT.value,
+    ShipmentStatus.ARRIVED.value,
+    ShipmentStatus.DISCHARGING.value,
+    ShipmentStatus.DISCHARGED.value,
+}
 
 
 TERMINAL_SHIPMENT_STATUSES = {
@@ -167,6 +202,142 @@ async def _serialize_shipment_logistics_row(shipment: dict) -> dict:
         "cost_totals": cost_totals,
         "recent_events": events[-5:],
     }
+
+
+async def _get_all_logistics_costs_db(
+    trade_id: int | None = None,
+    shipment_id: int | None = None,
+    from_date: date | None = None,
+    to_date: date | None = None,
+):
+    if shipment_id is not None:
+        costs = await get_logistics_costs_by_shipment_db(shipment_id)
+    elif trade_id is not None:
+        costs = []
+        for shipment in await get_shipments_by_trade_db(trade_id):
+            costs.extend(await get_logistics_costs_by_shipment_db(shipment["id"]))
+    else:
+        costs = supabase.table("logistics_costs").select("*").execute().data
+
+    if from_date is None and to_date is None:
+        return costs
+
+    filtered = []
+    for cost in costs:
+        cost_date = _parse_date(cost.get("cost_date"))
+        if from_date is not None and cost_date is not None and cost_date < from_date:
+            continue
+        if to_date is not None and cost_date is not None and cost_date > to_date:
+            continue
+        filtered.append(cost)
+    return filtered
+
+
+async def _get_all_delivery_orders_db(trade_id: int | None = None):
+    if trade_id is not None:
+        orders = []
+        for shipment in await get_shipments_by_trade_db(trade_id):
+            orders.extend(await get_delivery_orders_by_shipment_db(shipment["id"]))
+        return orders
+    return supabase.table("delivery_orders").select("*").execute().data
+
+
+async def _get_all_port_calls_db(trade_id: int | None = None):
+    if trade_id is not None:
+        port_calls = []
+        for shipment in await get_shipments_by_trade_db(trade_id):
+            port_calls.extend(
+                supabase.table("port_calls")
+                .select("*")
+                .eq("shipment_id", shipment["id"])
+                .execute()
+                .data
+            )
+        return port_calls
+    return supabase.table("port_calls").select("*").execute().data
+
+
+def _aggregate_costs_by_category(costs: list) -> dict:
+    by_category: dict[str, dict] = {}
+    total_estimated = Decimal("0")
+    total_actual = Decimal("0")
+    total_paid = Decimal("0")
+    total_unpaid = Decimal("0")
+
+    for cost in costs:
+        category = cost.get("category") or "other"
+        if category not in by_category:
+            by_category[category] = {
+                "category": category,
+                "count": 0,
+                "estimated_total": Decimal("0"),
+                "actual_total": Decimal("0"),
+                "paid_total": Decimal("0"),
+                "unpaid_total": Decimal("0"),
+                "unpaid_count": 0,
+            }
+
+        amount = _amount_in_base(cost)
+        entry = by_category[category]
+        entry["count"] += 1
+        if cost.get("is_estimated"):
+            entry["estimated_total"] += amount
+            total_estimated += amount
+        else:
+            entry["actual_total"] += amount
+            total_actual += amount
+        if cost.get("paid_date"):
+            entry["paid_total"] += amount
+            total_paid += amount
+        else:
+            entry["unpaid_total"] += amount
+            entry["unpaid_count"] += 1
+            total_unpaid += amount
+
+    categories = []
+    for category in sorted(by_category):
+        entry = by_category[category]
+        categories.append(
+            {
+                "category": entry["category"],
+                "count": entry["count"],
+                "estimated_total": float(entry["estimated_total"]),
+                "actual_total": float(entry["actual_total"]),
+                "paid_total": float(entry["paid_total"]),
+                "unpaid_total": float(entry["unpaid_total"]),
+                "unpaid_count": entry["unpaid_count"],
+            }
+        )
+
+    return {
+        "categories": categories,
+        "total_estimated": float(total_estimated),
+        "total_actual": float(total_actual),
+        "total_paid": float(total_paid),
+        "total_unpaid": float(total_unpaid),
+        "cost_count": len(costs),
+    }
+
+
+def _planned_cargo_quantity(cargo: dict) -> Decimal:
+    for field in ("net_weight", "gross_weight", "loaded_quantity"):
+        value = cargo.get(field)
+        if value is not None:
+            return _to_decimal(value)
+    return Decimal("0")
+
+
+def _port_call_reference_time(port_call: dict) -> datetime | None:
+    status = port_call.get("status")
+    if status == PortCallStatus.OPERATIONS_STARTED.value:
+        return _parse_datetime(port_call.get("operations_start_time"))
+    if status == PortCallStatus.BERTHED.value:
+        return (
+            _parse_datetime(port_call.get("atb"))
+            or _parse_datetime(port_call.get("ata"))
+            or _parse_datetime(port_call.get("eta"))
+        )
+    return None
 
 
 async def _update_shipment_status_db(shipment_id: int, status: ShipmentStatus):
@@ -1010,4 +1181,459 @@ async def get_trade_logistics_summary_db(trade_id: int):
         "total_actual_logistics_costs": float(total_actual_costs),
         "total_unpaid_logistics_costs": float(total_unpaid_costs),
         "shipments": shipment_rows,
+    }
+
+
+async def get_logistics_costs_portfolio_summary_db(
+    trade_id: int | None = None,
+    shipment_id: int | None = None,
+    from_date: date | None = None,
+    to_date: date | None = None,
+):
+    costs = await _get_all_logistics_costs_db(
+        trade_id=trade_id,
+        shipment_id=shipment_id,
+        from_date=from_date,
+        to_date=to_date,
+    )
+    aggregated = _aggregate_costs_by_category(costs)
+
+    return {
+        "filters": {
+            "trade_id": trade_id,
+            "shipment_id": shipment_id,
+            "from_date": from_date.isoformat() if from_date else None,
+            "to_date": to_date.isoformat() if to_date else None,
+        },
+        **aggregated,
+    }
+
+
+async def get_open_delivery_orders_summary_db(trade_id: int | None = None):
+    today = date.today()
+    orders = await _get_all_delivery_orders_db(trade_id)
+    open_orders = []
+
+    for order in orders:
+        if order.get("status") not in OPEN_DELIVERY_ORDER_STATUSES:
+            continue
+
+        deadline = _parse_date(order.get("delivery_deadline"))
+        is_overdue = deadline is not None and deadline < today
+        open_orders.append(
+            {
+                **order,
+                "is_overdue": is_overdue,
+                "days_overdue": (today - deadline).days if is_overdue else 0,
+            }
+        )
+
+    open_orders.sort(
+        key=lambda order: (
+            not order["is_overdue"],
+            order.get("delivery_deadline") or "9999-12-31",
+        )
+    )
+
+    return {
+        "filters": {"trade_id": trade_id},
+        "as_of": today.isoformat(),
+        "open_count": len(open_orders),
+        "overdue_count": sum(1 for order in open_orders if order["is_overdue"]),
+        "by_status": dict(Counter(order.get("status") for order in open_orders)),
+        "delivery_orders": open_orders,
+    }
+
+
+async def get_cargo_loading_progress_summary_db(trade_id: int | None = None):
+    shipments = await _get_shipments_filtered_db(trade_id)
+    rows = []
+
+    for shipment in shipments:
+        if not _is_active_shipment(shipment):
+            continue
+
+        cargo_items = await get_cargo_by_shipment_db(shipment["id"])
+        cargo_rows = []
+        total_planned = Decimal("0")
+        total_loaded = Decimal("0")
+        total_discharged = Decimal("0")
+
+        for cargo in cargo_items:
+            planned = _planned_cargo_quantity(cargo)
+            loaded = _to_decimal(cargo.get("loaded_quantity"))
+            discharged = _to_decimal(cargo.get("discharged_quantity"))
+            total_planned += planned
+            total_loaded += loaded
+            total_discharged += discharged
+
+            loading_progress = (
+                float((loaded / planned) * 100) if planned > 0 else None
+            )
+            discharge_progress = (
+                float((discharged / planned) * 100) if planned > 0 else None
+            )
+            cargo_rows.append(
+                {
+                    "cargo_id": cargo.get("id"),
+                    "commodity": cargo.get("commodity"),
+                    "planned_quantity": float(planned),
+                    "loaded_quantity": float(loaded),
+                    "discharged_quantity": float(discharged),
+                    "quantity_unit": cargo.get("quantity_unit")
+                    or cargo.get("weight_unit"),
+                    "loading_progress_percentage": loading_progress,
+                    "discharge_progress_percentage": discharge_progress,
+                }
+            )
+
+        overall_loading = (
+            float((total_loaded / total_planned) * 100) if total_planned > 0 else None
+        )
+        overall_discharge = (
+            float((total_discharged / total_planned) * 100)
+            if total_planned > 0
+            else None
+        )
+
+        rows.append(
+            {
+                "shipment_id": shipment["id"],
+                "shipment_code": shipment.get("shipment_code"),
+                "status": shipment.get("status"),
+                "overall_loading_progress_percentage": overall_loading,
+                "overall_discharge_progress_percentage": overall_discharge,
+                "cargo": cargo_rows,
+            }
+        )
+
+    return {
+        "filters": {"trade_id": trade_id},
+        "active_shipment_count": len(rows),
+        "shipments": rows,
+    }
+
+
+async def get_port_call_bottlenecks_summary_db(
+    days_threshold: int = 2,
+    trade_id: int | None = None,
+):
+    now = datetime.now()
+    port_calls = await _get_all_port_calls_db(trade_id)
+    bottlenecks = []
+
+    for port_call in port_calls:
+        if port_call.get("status") not in BOTTLENECK_PORT_CALL_STATUSES:
+            continue
+
+        reference_time = _port_call_reference_time(port_call)
+        if reference_time is None:
+            continue
+
+        if reference_time.tzinfo is not None:
+            reference_time = reference_time.replace(tzinfo=None)
+
+        days_stuck = (now - reference_time).total_seconds() / 86400
+        if days_stuck < days_threshold:
+            continue
+
+        bottlenecks.append(
+            {
+                **port_call,
+                "days_stuck": round(days_stuck, 1),
+                "reference_time": reference_time.isoformat(),
+            }
+        )
+
+    bottlenecks.sort(key=lambda port_call: port_call["days_stuck"], reverse=True)
+
+    return {
+        "filters": {
+            "trade_id": trade_id,
+            "days_threshold": days_threshold,
+        },
+        "bottleneck_count": len(bottlenecks),
+        "by_status": dict(Counter(item.get("status") for item in bottlenecks)),
+        "port_calls": bottlenecks,
+    }
+
+
+async def get_shipment_costs_summary_db(shipment_id: int):
+    shipment_data = await get_shipment_db(shipment_id)
+    if not shipment_data:
+        return None
+
+    costs = await get_logistics_costs_by_shipment_db(shipment_id)
+    aggregated = _aggregate_costs_by_category(costs)
+
+    return {
+        "shipment_id": shipment_id,
+        "trade_id": shipment_data[0].get("trade_id"),
+        **aggregated,
+    }
+
+
+async def get_shipment_legs_summary_db(shipment_id: int):
+    shipment_data = await get_shipment_db(shipment_id)
+    if not shipment_data:
+        return None
+
+    legs = await get_shipment_legs_db(shipment_id)
+    active_legs = [
+        leg
+        for leg in legs
+        if leg.get("status") != ShipmentLegStatus.CANCELLED.value
+    ]
+    completed_count = sum(
+        1
+        for leg in active_legs
+        if leg.get("status") == ShipmentLegStatus.COMPLETED.value
+    )
+    delayed_count = sum(
+        1
+        for leg in active_legs
+        if leg.get("status") == ShipmentLegStatus.DELAYED.value
+    )
+    completion_progress = (
+        float(completed_count / len(active_legs)) if active_legs else None
+    )
+
+    return {
+        "shipment_id": shipment_id,
+        "trade_id": shipment_data[0].get("trade_id"),
+        "leg_count": len(legs),
+        "active_leg_count": len(active_legs),
+        "completed_count": completed_count,
+        "delayed_count": delayed_count,
+        "completion_progress": completion_progress,
+        "legs_by_status": dict(Counter(leg.get("status") for leg in legs)),
+        "legs_by_mode": dict(Counter(leg.get("mode") for leg in legs)),
+    }
+
+
+async def get_shipment_settlement_status_db(shipment_id: int):
+    shipment_data = await get_shipment_db(shipment_id)
+    if not shipment_data:
+        return None
+
+    shipment = shipment_data[0]
+    legs = await get_shipment_legs_db(shipment_id)
+    costs = await get_logistics_costs_by_shipment_db(shipment_id)
+    delivery_orders = await get_delivery_orders_by_shipment_db(shipment_id)
+
+    active_legs = [
+        leg
+        for leg in legs
+        if leg.get("status") != ShipmentLegStatus.CANCELLED.value
+    ]
+    incomplete_legs = [
+        leg
+        for leg in active_legs
+        if leg.get("status") != ShipmentLegStatus.COMPLETED.value
+    ]
+    estimated_costs = [cost for cost in costs if cost.get("is_estimated")]
+    unpaid_costs = [cost for cost in costs if not cost.get("paid_date")]
+    open_delivery_orders = [
+        order
+        for order in delivery_orders
+        if order.get("status") in OPEN_DELIVERY_ORDER_STATUSES
+    ]
+
+    blockers = []
+    if shipment.get("status") in TERMINAL_SHIPMENT_STATUSES:
+        blockers.append("shipment_already_terminal")
+    if incomplete_legs:
+        blockers.append("incomplete_legs_remaining")
+    if estimated_costs:
+        blockers.append("estimated_costs_remaining")
+    if unpaid_costs:
+        blockers.append("unpaid_costs_remaining")
+    if open_delivery_orders:
+        blockers.append("open_delivery_orders_remaining")
+
+    return {
+        "shipment_id": shipment_id,
+        "trade_id": shipment.get("trade_id"),
+        "shipment_status": shipment.get("status"),
+        "ready_to_close": len(blockers) == 0,
+        "blockers": blockers,
+        "cost_summary": _shipment_cost_totals(costs),
+        "incomplete_leg_count": len(incomplete_legs),
+        "open_delivery_order_count": len(open_delivery_orders),
+    }
+
+
+async def get_trade_freight_exposure_summary_db(trade_id: int):
+    from app.trades.db import get_trade_costs_by_trade_db
+
+    logistics_estimated = Decimal("0")
+    logistics_actual = Decimal("0")
+    trade_estimated = Decimal("0")
+    trade_actual = Decimal("0")
+
+    for shipment in await get_shipments_by_trade_db(trade_id):
+        for cost in await get_logistics_costs_by_shipment_db(shipment["id"]):
+            if cost.get("category") != FREIGHT_CATEGORY:
+                continue
+            amount = _amount_in_base(cost)
+            if cost.get("is_estimated"):
+                logistics_estimated += amount
+            else:
+                logistics_actual += amount
+
+    for cost in await get_trade_costs_by_trade_db(trade_id):
+        if cost.get("category") != FREIGHT_CATEGORY:
+            continue
+        amount = _amount_in_base(cost)
+        if cost.get("is_estimated"):
+            trade_estimated += amount
+        else:
+            trade_actual += amount
+
+    logistics_total = logistics_estimated + logistics_actual
+    trade_total = trade_estimated + trade_actual
+
+    return {
+        "trade_id": trade_id,
+        "logistics_freight": {
+            "estimated": float(logistics_estimated),
+            "actual": float(logistics_actual),
+            "total": float(logistics_total),
+        },
+        "trade_freight_costs": {
+            "estimated": float(trade_estimated),
+            "actual": float(trade_actual),
+            "total": float(trade_total),
+        },
+        "combined_freight_total": float(logistics_total + trade_total),
+        "potential_double_count_risk": logistics_total > 0 and trade_total > 0,
+        "variance_logistics_vs_trade": float(logistics_total - trade_total),
+    }
+
+
+async def get_trade_logistics_status_db(trade_id: int):
+    shipments = await get_shipments_by_trade_db(trade_id)
+    shipment_statuses = []
+    blockers = set()
+    ready_count = 0
+
+    for shipment in shipments:
+        status = await get_shipment_settlement_status_db(shipment["id"])
+        if not status:
+            continue
+        shipment_statuses.append(status)
+        if status["ready_to_close"]:
+            ready_count += 1
+        else:
+            for blocker in status["blockers"]:
+                blockers.add(blocker)
+
+    today = date.today()
+    delayed_count = sum(
+        1 for shipment in shipments if _is_delayed_shipment(shipment, today)
+    )
+    open_orders = await get_open_delivery_orders_summary_db(trade_id)
+
+    return {
+        "trade_id": trade_id,
+        "shipment_count": len(shipments),
+        "ready_to_close_shipment_count": ready_count,
+        "logistics_ready_to_close": (
+            len(shipments) > 0 and ready_count == len(shipments)
+        ),
+        "delayed_shipment_count": delayed_count,
+        "open_delivery_order_count": open_orders["open_count"],
+        "overdue_delivery_order_count": open_orders["overdue_count"],
+        "aggregate_blockers": sorted(blockers),
+        "shipments": shipment_statuses,
+    }
+
+
+async def get_departures_calendar_summary_db(
+    from_date: date,
+    to_date: date,
+    trade_id: int | None = None,
+):
+    shipments = await _get_shipments_filtered_db(trade_id)
+    events = []
+
+    for shipment in shipments:
+        for field, event_type in (
+            ("estimated_departure_date", "estimated_departure"),
+            ("actual_departure_date", "actual_departure"),
+        ):
+            departure_date = _parse_date(shipment.get(field))
+            if departure_date is None:
+                continue
+            if from_date <= departure_date <= to_date:
+                events.append(
+                    {
+                        "shipment_id": shipment["id"],
+                        "trade_id": shipment.get("trade_id"),
+                        "shipment_code": shipment.get("shipment_code"),
+                        "status": shipment.get("status"),
+                        "mode": shipment.get("mode"),
+                        "event_type": event_type,
+                        "departure_date": departure_date.isoformat(),
+                        "origin_location": shipment.get("origin_location"),
+                        "destination_location": shipment.get("destination_location"),
+                    }
+                )
+
+    events.sort(key=lambda event: event["departure_date"])
+
+    return {
+        "filters": {
+            "trade_id": trade_id,
+            "from_date": from_date.isoformat(),
+            "to_date": to_date.isoformat(),
+        },
+        "event_count": len(events),
+        "events": events,
+    }
+
+
+async def get_cost_forecast_summary_db(trade_id: int | None = None):
+    shipments = await _get_shipments_filtered_db(trade_id)
+    in_transit_shipments = [
+        shipment
+        for shipment in shipments
+        if shipment.get("status") in IN_TRANSIT_SHIPMENT_STATUSES
+    ]
+
+    total_estimated = Decimal("0")
+    total_unpaid_estimated = Decimal("0")
+    rows = []
+
+    for shipment in in_transit_shipments:
+        costs = await get_logistics_costs_by_shipment_db(shipment["id"])
+        shipment_estimated = Decimal("0")
+        shipment_unpaid_estimated = Decimal("0")
+
+        for cost in costs:
+            if not cost.get("is_estimated"):
+                continue
+            amount = _amount_in_base(cost)
+            shipment_estimated += amount
+            if not cost.get("paid_date"):
+                shipment_unpaid_estimated += amount
+
+        total_estimated += shipment_estimated
+        total_unpaid_estimated += shipment_unpaid_estimated
+        rows.append(
+            {
+                "shipment_id": shipment["id"],
+                "shipment_code": shipment.get("shipment_code"),
+                "status": shipment.get("status"),
+                "estimated_logistics_costs": float(shipment_estimated),
+                "unpaid_estimated_logistics_costs": float(shipment_unpaid_estimated),
+            }
+        )
+
+    return {
+        "filters": {"trade_id": trade_id},
+        "in_transit_shipment_count": len(in_transit_shipments),
+        "total_estimated_logistics_costs": float(total_estimated),
+        "total_unpaid_estimated_logistics_costs": float(total_unpaid_estimated),
+        "shipments": rows,
     }

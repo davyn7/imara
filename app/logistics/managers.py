@@ -108,6 +108,17 @@ from app.logistics.db import (
     get_upcoming_arrivals_summary_db,
     get_shipments_by_status_summary_db,
     get_trade_logistics_summary_db,
+    get_logistics_costs_portfolio_summary_db,
+    get_open_delivery_orders_summary_db,
+    get_cargo_loading_progress_summary_db,
+    get_port_call_bottlenecks_summary_db,
+    get_shipment_costs_summary_db,
+    get_shipment_legs_summary_db,
+    get_shipment_settlement_status_db,
+    get_trade_freight_exposure_summary_db,
+    get_trade_logistics_status_db,
+    get_departures_calendar_summary_db,
+    get_cost_forecast_summary_db,
 )
 
 
@@ -434,3 +445,56 @@ class LogisticsSummaryManager:
 
     async def get_trade_logistics_summary(self, trade_id: int):
         return await get_trade_logistics_summary_db(trade_id)
+
+    async def get_logistics_costs_portfolio_summary(
+        self,
+        trade_id: int | None = None,
+        shipment_id: int | None = None,
+        from_date=None,
+        to_date=None,
+    ):
+        return await get_logistics_costs_portfolio_summary_db(
+            trade_id,
+            shipment_id,
+            from_date,
+            to_date,
+        )
+
+    async def get_open_delivery_orders_summary(self, trade_id: int | None = None):
+        return await get_open_delivery_orders_summary_db(trade_id)
+
+    async def get_cargo_loading_progress_summary(self, trade_id: int | None = None):
+        return await get_cargo_loading_progress_summary_db(trade_id)
+
+    async def get_port_call_bottlenecks_summary(
+        self,
+        days_threshold: int = 2,
+        trade_id: int | None = None,
+    ):
+        return await get_port_call_bottlenecks_summary_db(days_threshold, trade_id)
+
+    async def get_shipment_costs_summary(self, shipment_id: int):
+        return await get_shipment_costs_summary_db(shipment_id)
+
+    async def get_shipment_legs_summary(self, shipment_id: int):
+        return await get_shipment_legs_summary_db(shipment_id)
+
+    async def get_shipment_settlement_status(self, shipment_id: int):
+        return await get_shipment_settlement_status_db(shipment_id)
+
+    async def get_trade_freight_exposure_summary(self, trade_id: int):
+        return await get_trade_freight_exposure_summary_db(trade_id)
+
+    async def get_trade_logistics_status(self, trade_id: int):
+        return await get_trade_logistics_status_db(trade_id)
+
+    async def get_departures_calendar_summary(
+        self,
+        from_date,
+        to_date,
+        trade_id: int | None = None,
+    ):
+        return await get_departures_calendar_summary_db(from_date, to_date, trade_id)
+
+    async def get_cost_forecast_summary(self, trade_id: int | None = None):
+        return await get_cost_forecast_summary_db(trade_id)
