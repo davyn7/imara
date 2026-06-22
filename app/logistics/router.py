@@ -1,8 +1,15 @@
 # app/logistics/router.py
 
 from fastapi import APIRouter
-from app.logistics.managers import ShipmentManager
-from app.logistics.schemas import ShipmentCreate, ShipmentUpdate
+from app.logistics.managers import ShipmentManager, CargoManager
+from app.logistics.schemas import (
+    ShipmentCreate,
+    ShipmentUpdate,
+    CargoCreate,
+    CargoUpdate,
+    CargoLoadedQuantityUpdate,
+    CargoDischargedQuantityUpdate,
+)
 
 router = APIRouter(prefix="/logistics", tags=["Logistics"])
 
@@ -169,38 +176,72 @@ async def delay_shipment(shipment_id: int):
 # ============================================================
 
 @router.post("/shipments/{shipment_id}/cargo")
-async def create_cargo(shipment_id: int):
-    pass
+async def create_cargo(shipment_id: int, cargo: CargoCreate):
+    try:
+        manager = CargoManager(cargo)
+        return await manager.create_cargo(shipment_id)
+    except Exception as e:
+        raise e
 
 
 @router.get("/shipments/{shipment_id}/cargo")
 async def get_cargo_by_shipment(shipment_id: int):
-    pass
+    try:
+        manager = CargoManager()
+        return await manager.get_cargo_by_shipment(shipment_id)
+    except Exception as e:
+        raise e
 
 
 @router.get("/cargo/{cargo_id}")
 async def get_cargo(cargo_id: int):
-    pass
+    try:
+        manager = CargoManager()
+        return await manager.get_cargo(cargo_id)
+    except Exception as e:
+        raise e
 
 
 @router.patch("/cargo/{cargo_id}")
-async def update_cargo(cargo_id: int):
-    pass
+async def update_cargo(cargo_id: int, cargo: CargoUpdate):
+    try:
+        manager = CargoManager(cargo)
+        return await manager.update_cargo(cargo_id)
+    except Exception as e:
+        raise e
 
 
 @router.delete("/cargo/{cargo_id}")
 async def delete_cargo(cargo_id: int):
-    pass
+    try:
+        manager = CargoManager()
+        return await manager.delete_cargo(cargo_id)
+    except Exception as e:
+        raise e
 
 
 @router.post("/cargo/{cargo_id}/update-loaded-quantity")
-async def update_cargo_loaded_quantity(cargo_id: int):
-    pass
+async def update_cargo_loaded_quantity(
+    cargo_id: int,
+    update: CargoLoadedQuantityUpdate,
+):
+    try:
+        manager = CargoManager()
+        return await manager.update_cargo_loaded_quantity(cargo_id, update)
+    except Exception as e:
+        raise e
 
 
 @router.post("/cargo/{cargo_id}/update-discharged-quantity")
-async def update_cargo_discharged_quantity(cargo_id: int):
-    pass
+async def update_cargo_discharged_quantity(
+    cargo_id: int,
+    update: CargoDischargedQuantityUpdate,
+):
+    try:
+        manager = CargoManager()
+        return await manager.update_cargo_discharged_quantity(cargo_id, update)
+    except Exception as e:
+        raise e
 
 
 # ============================================================

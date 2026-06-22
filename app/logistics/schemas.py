@@ -282,6 +282,16 @@ class CargoRead(CargoBase):
     id: int
 
 
+class CargoLoadedQuantityUpdate(BaseModel):
+    loaded_quantity: Decimal
+    quantity_unit: Optional[QuantityUnit] = None
+
+
+class CargoDischargedQuantityUpdate(BaseModel):
+    discharged_quantity: Decimal
+    quantity_unit: Optional[QuantityUnit] = None
+
+
 # ============================================================
 # Shipment Legs
 # ============================================================

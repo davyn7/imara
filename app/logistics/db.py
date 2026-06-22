@@ -5,6 +5,10 @@ from app.logistics.schemas import (
     ShipmentCreate,
     ShipmentUpdate,
     ShipmentStatus,
+    CargoCreate,
+    CargoUpdate,
+    CargoLoadedQuantityUpdate,
+    CargoDischargedQuantityUpdate,
 )
 
 
@@ -121,13 +125,7 @@ async def get_shipment_overview_db(shipment_id: int):
     if not shipment_data:
         return None
 
-    cargo = (
-        supabase.table("cargo")
-        .select("*")
-        .eq("shipment_id", shipment_id)
-        .execute()
-        .data
-    )
+    cargo = await get_cargo_by_shipment_db(shipment_id)
     legs = (
         supabase.table("shipment_legs")
         .select("*")
@@ -157,3 +155,81 @@ async def get_shipment_overview_db(shipment_id: int):
         "events": events,
         "costs": costs,
     }
+
+
+# Cargo DB Operations
+
+async def get_cargo_by_shipment_db(shipment_id: int):
+    response = (
+        supabase.table("cargo")
+        .select("*")
+        .eq("shipment_id", shipment_id)
+        .execute()
+    )
+    return response.data
+
+
+async def get_cargo_db(cargo_id: int):
+    response = (
+        supabase.table("cargo")
+        .select("*")
+        .eq("id", cargo_id)
+        .execute()
+    )
+    return response.data
+
+
+async def add_cargo_db(shipment_id: int, cargo: CargoCreate):
+    cargo_data = _serialize(cargo)
+    cargo_data["shipment_id"] = shipment_id
+    response = supabase.table("cargo").insert(cargo_data).execute()
+    return response.data
+
+
+async def update_cargo_db(cargo: CargoUpdate, cargo_id: int):
+    cargo_data = cargo.model_dump(mode="json", exclude_unset=True)
+    response = (
+        supabase.table("cargo")
+        .update(cargo_data)
+        .eq("id", cargo_id)
+        .execute()
+    )
+    return response.data
+
+
+async def delete_cargo_db(cargo_id: int):
+    response = (
+        supabase.table("cargo")
+        .delete()
+        .eq("id", cargo_id)
+        .execute()
+    )
+    return response.data
+
+
+async def update_cargo_loaded_quantity_db(
+    cargo_id: int,
+    update: CargoLoadedQuantityUpdate,
+):
+    update_data = update.model_dump(mode="json", exclude_unset=True)
+    response = (
+        supabase.table("cargo")
+        .update(update_data)
+        .eq("id", cargo_id)
+        .execute()
+    )
+    return response.data
+
+
+async def update_cargo_discharged_quantity_db(
+    cargo_id: int,
+    update: CargoDischargedQuantityUpdate,
+):
+    update_data = update.model_dump(mode="json", exclude_unset=True)
+    response = (
+        supabase.table("cargo")
+        .update(update_data)
+        .eq("id", cargo_id)
+        .execute()
+    )
+    return response.data

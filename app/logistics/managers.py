@@ -1,6 +1,13 @@
 # app/logistics/managers.py
 
-from app.logistics.schemas import ShipmentCreate, ShipmentUpdate
+from app.logistics.schemas import (
+    ShipmentCreate,
+    ShipmentUpdate,
+    CargoCreate,
+    CargoUpdate,
+    CargoLoadedQuantityUpdate,
+    CargoDischargedQuantityUpdate,
+)
 from app.logistics.db import (
     get_shipments_db,
     get_shipment_db,
@@ -19,6 +26,13 @@ from app.logistics.db import (
     cancel_shipment_db,
     delay_shipment_db,
     get_shipment_overview_db,
+    get_cargo_by_shipment_db,
+    get_cargo_db,
+    add_cargo_db,
+    update_cargo_db,
+    delete_cargo_db,
+    update_cargo_loaded_quantity_db,
+    update_cargo_discharged_quantity_db,
 )
 
 
@@ -76,3 +90,37 @@ class ShipmentManager:
 
     async def get_shipment_overview(self, shipment_id: int):
         return await get_shipment_overview_db(shipment_id)
+
+
+class CargoManager:
+    def __init__(self, cargo: CargoCreate | CargoUpdate | None = None):
+        self.cargo = cargo
+
+    async def get_cargo_by_shipment(self, shipment_id: int):
+        return await get_cargo_by_shipment_db(shipment_id)
+
+    async def get_cargo(self, cargo_id: int):
+        return await get_cargo_db(cargo_id)
+
+    async def create_cargo(self, shipment_id: int):
+        return await add_cargo_db(shipment_id, self.cargo)
+
+    async def update_cargo(self, cargo_id: int):
+        return await update_cargo_db(self.cargo, cargo_id)
+
+    async def delete_cargo(self, cargo_id: int):
+        return await delete_cargo_db(cargo_id)
+
+    async def update_cargo_loaded_quantity(
+        self,
+        cargo_id: int,
+        update: CargoLoadedQuantityUpdate,
+    ):
+        return await update_cargo_loaded_quantity_db(cargo_id, update)
+
+    async def update_cargo_discharged_quantity(
+        self,
+        cargo_id: int,
+        update: CargoDischargedQuantityUpdate,
+    ):
+        return await update_cargo_discharged_quantity_db(cargo_id, update)
