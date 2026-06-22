@@ -2,56 +2,533 @@
 
 from fastapi import APIRouter
 from app.logistics.managers import ShipmentManager
-from app.logistics.schemas import ShipmentBase
+from app.logistics.schemas import ShipmentCreate, ShipmentUpdate
 
 router = APIRouter(prefix="/logistics", tags=["Logistics"])
 
-# Shipment Routers
+
+# ============================================================
+# Shipments
+# ============================================================
+
+@router.post("/shipments")
+async def create_shipment(shipment: ShipmentCreate):
+    try:
+        manager = ShipmentManager(shipment)
+        return await manager.create_shipment()
+    except Exception as e:
+        raise e
+
 
 @router.get("/shipments")
 async def get_shipments():
     try:
-        manager = ShipmentManager(None)
+        manager = ShipmentManager()
         return await manager.get_shipments()
     except Exception as e:
         raise e
 
+
+@router.get("/trades/{trade_id}/shipments")
+async def get_shipments_by_trade(trade_id: int):
+    try:
+        manager = ShipmentManager()
+        return await manager.get_shipments_by_trade(trade_id)
+    except Exception as e:
+        raise e
+
+
+@router.get("/shipments/{shipment_id}/overview")
+async def get_shipment_overview(shipment_id: int):
+    try:
+        manager = ShipmentManager()
+        return await manager.get_shipment_overview(shipment_id)
+    except Exception as e:
+        raise e
+
+
 @router.get("/shipments/{shipment_id}")
 async def get_shipment(shipment_id: int):
     try:
-        manager = ShipmentManager(None)
+        manager = ShipmentManager()
         return await manager.get_shipment(shipment_id)
     except Exception as e:
         raise e
 
-@router.post("/add_shipment")
-async def add_shipment(shipment: ShipmentBase):
-    try:
-        manager = ShipmentManager(shipment)
-        return await manager.add_shipment()
-    except Exception as e:
-        raise e
 
-@router.put("/update_shipment/{shipment_id}")
-async def update_shipment(shipment_id: int, shipment: ShipmentBase):
+@router.patch("/shipments/{shipment_id}")
+async def update_shipment(shipment_id: int, shipment: ShipmentUpdate):
     try:
         manager = ShipmentManager(shipment)
         return await manager.update_shipment(shipment_id)
     except Exception as e:
         raise e
 
-@router.delete("/delete_shipment/{shipment_id}")
+
+@router.delete("/shipments/{shipment_id}")
 async def delete_shipment(shipment_id: int):
     try:
-        manager = ShipmentManager(None)
+        manager = ShipmentManager()
         return await manager.delete_shipment(shipment_id)
     except Exception as e:
         raise e
 
-@router.delete("/delete_shipments")
-async def delete_shipments():
+
+@router.post("/shipments/{shipment_id}/book")
+async def book_shipment(shipment_id: int):
     try:
-        manager = ShipmentManager(None)
-        return await manager.delete_shipments()
+        manager = ShipmentManager()
+        return await manager.book_shipment(shipment_id)
     except Exception as e:
         raise e
+
+
+@router.post("/shipments/{shipment_id}/mark-loading")
+async def mark_shipment_as_loading(shipment_id: int):
+    try:
+        manager = ShipmentManager()
+        return await manager.mark_shipment_as_loading(shipment_id)
+    except Exception as e:
+        raise e
+
+
+@router.post("/shipments/{shipment_id}/mark-loaded")
+async def mark_shipment_as_loaded(shipment_id: int):
+    try:
+        manager = ShipmentManager()
+        return await manager.mark_shipment_as_loaded(shipment_id)
+    except Exception as e:
+        raise e
+
+
+@router.post("/shipments/{shipment_id}/mark-in-transit")
+async def mark_shipment_as_in_transit(shipment_id: int):
+    try:
+        manager = ShipmentManager()
+        return await manager.mark_shipment_as_in_transit(shipment_id)
+    except Exception as e:
+        raise e
+
+
+@router.post("/shipments/{shipment_id}/mark-arrived")
+async def mark_shipment_as_arrived(shipment_id: int):
+    try:
+        manager = ShipmentManager()
+        return await manager.mark_shipment_as_arrived(shipment_id)
+    except Exception as e:
+        raise e
+
+
+@router.post("/shipments/{shipment_id}/mark-discharged")
+async def mark_shipment_as_discharged(shipment_id: int):
+    try:
+        manager = ShipmentManager()
+        return await manager.mark_shipment_as_discharged(shipment_id)
+    except Exception as e:
+        raise e
+
+
+@router.post("/shipments/{shipment_id}/mark-delivered")
+async def mark_shipment_as_delivered(shipment_id: int):
+    try:
+        manager = ShipmentManager()
+        return await manager.mark_shipment_as_delivered(shipment_id)
+    except Exception as e:
+        raise e
+
+
+@router.post("/shipments/{shipment_id}/close")
+async def close_shipment(shipment_id: int):
+    try:
+        manager = ShipmentManager()
+        return await manager.close_shipment(shipment_id)
+    except Exception as e:
+        raise e
+
+
+@router.post("/shipments/{shipment_id}/cancel")
+async def cancel_shipment(shipment_id: int):
+    try:
+        manager = ShipmentManager()
+        return await manager.cancel_shipment(shipment_id)
+    except Exception as e:
+        raise e
+
+
+@router.post("/shipments/{shipment_id}/delay")
+async def delay_shipment(shipment_id: int):
+    try:
+        manager = ShipmentManager()
+        return await manager.delay_shipment(shipment_id)
+    except Exception as e:
+        raise e
+
+
+# ============================================================
+# Cargo
+# ============================================================
+
+@router.post("/shipments/{shipment_id}/cargo")
+async def create_cargo(shipment_id: int):
+    pass
+
+
+@router.get("/shipments/{shipment_id}/cargo")
+async def get_cargo_by_shipment(shipment_id: int):
+    pass
+
+
+@router.get("/cargo/{cargo_id}")
+async def get_cargo(cargo_id: int):
+    pass
+
+
+@router.patch("/cargo/{cargo_id}")
+async def update_cargo(cargo_id: int):
+    pass
+
+
+@router.delete("/cargo/{cargo_id}")
+async def delete_cargo(cargo_id: int):
+    pass
+
+
+@router.post("/cargo/{cargo_id}/update-loaded-quantity")
+async def update_cargo_loaded_quantity(cargo_id: int):
+    pass
+
+
+@router.post("/cargo/{cargo_id}/update-discharged-quantity")
+async def update_cargo_discharged_quantity(cargo_id: int):
+    pass
+
+
+# ============================================================
+# Shipment Legs
+# ============================================================
+
+@router.post("/shipments/{shipment_id}/legs")
+async def create_shipment_leg(shipment_id: int):
+    pass
+
+
+@router.get("/shipments/{shipment_id}/legs")
+async def get_shipment_legs(shipment_id: int):
+    pass
+
+
+@router.get("/legs/{shipment_leg_id}")
+async def get_shipment_leg(shipment_leg_id: int):
+    pass
+
+
+@router.patch("/legs/{shipment_leg_id}")
+async def update_shipment_leg(shipment_leg_id: int):
+    pass
+
+
+@router.delete("/legs/{shipment_leg_id}")
+async def delete_shipment_leg(shipment_leg_id: int):
+    pass
+
+
+@router.post("/legs/{shipment_leg_id}/start")
+async def start_shipment_leg(shipment_leg_id: int):
+    pass
+
+
+@router.post("/legs/{shipment_leg_id}/complete")
+async def complete_shipment_leg(shipment_leg_id: int):
+    pass
+
+
+@router.post("/legs/{shipment_leg_id}/delay")
+async def delay_shipment_leg(shipment_leg_id: int):
+    pass
+
+
+@router.post("/legs/{shipment_leg_id}/cancel")
+async def cancel_shipment_leg(shipment_leg_id: int):
+    pass
+
+
+# ============================================================
+# Ports
+# ============================================================
+
+@router.post("/ports")
+async def create_port():
+    pass
+
+
+@router.get("/ports")
+async def get_ports():
+    pass
+
+
+@router.get("/ports/{port_id}")
+async def get_port(port_id: int):
+    pass
+
+
+@router.patch("/ports/{port_id}")
+async def update_port(port_id: int):
+    pass
+
+
+@router.delete("/ports/{port_id}")
+async def delete_port(port_id: int):
+    pass
+
+
+# ============================================================
+# Port Calls
+# ============================================================
+
+@router.post("/shipments/{shipment_id}/port-calls")
+async def create_port_call(shipment_id: int):
+    pass
+
+
+@router.get("/shipments/{shipment_id}/port-calls")
+async def get_port_calls_by_shipment(shipment_id: int):
+    pass
+
+
+@router.get("/port-calls/{port_call_id}")
+async def get_port_call(port_call_id: int):
+    pass
+
+
+@router.patch("/port-calls/{port_call_id}")
+async def update_port_call(port_call_id: int):
+    pass
+
+
+@router.delete("/port-calls/{port_call_id}")
+async def delete_port_call(port_call_id: int):
+    pass
+
+
+@router.post("/port-calls/{port_call_id}/mark-arrived")
+async def mark_port_call_as_arrived(port_call_id: int):
+    pass
+
+
+@router.post("/port-calls/{port_call_id}/mark-berthed")
+async def mark_port_call_as_berthed(port_call_id: int):
+    pass
+
+
+@router.post("/port-calls/{port_call_id}/start-operations")
+async def start_port_call_operations(port_call_id: int):
+    pass
+
+
+@router.post("/port-calls/{port_call_id}/complete-operations")
+async def complete_port_call_operations(port_call_id: int):
+    pass
+
+
+@router.post("/port-calls/{port_call_id}/mark-sailed")
+async def mark_port_call_as_sailed(port_call_id: int):
+    pass
+
+
+# ============================================================
+# Vessels
+# ============================================================
+
+@router.post("/vessels")
+async def create_vessel():
+    pass
+
+
+@router.get("/vessels")
+async def get_vessels():
+    pass
+
+
+@router.get("/vessels/{vessel_id}")
+async def get_vessel(vessel_id: int):
+    pass
+
+
+@router.patch("/vessels/{vessel_id}")
+async def update_vessel(vessel_id: int):
+    pass
+
+
+@router.delete("/vessels/{vessel_id}")
+async def delete_vessel(vessel_id: int):
+    pass
+
+
+# ============================================================
+# Containers
+# ============================================================
+
+@router.post("/shipments/{shipment_id}/containers")
+async def create_container(shipment_id: int):
+    pass
+
+
+@router.get("/shipments/{shipment_id}/containers")
+async def get_containers_by_shipment(shipment_id: int):
+    pass
+
+
+@router.get("/containers/{container_id}")
+async def get_container(container_id: int):
+    pass
+
+
+@router.patch("/containers/{container_id}")
+async def update_container(container_id: int):
+    pass
+
+
+@router.delete("/containers/{container_id}")
+async def delete_container(container_id: int):
+    pass
+
+
+# ============================================================
+# Logistics Events
+# ============================================================
+
+@router.post("/shipments/{shipment_id}/events")
+async def create_logistics_event(shipment_id: int):
+    pass
+
+
+@router.get("/shipments/{shipment_id}/events")
+async def get_logistics_events_by_shipment(shipment_id: int):
+    pass
+
+
+@router.get("/events/{event_id}")
+async def get_logistics_event(event_id: int):
+    pass
+
+
+@router.patch("/events/{event_id}")
+async def update_logistics_event(event_id: int):
+    pass
+
+
+@router.delete("/events/{event_id}")
+async def delete_logistics_event(event_id: int):
+    pass
+
+
+# ============================================================
+# Logistics Costs
+# ============================================================
+
+@router.post("/shipments/{shipment_id}/costs")
+async def create_logistics_cost(shipment_id: int):
+    pass
+
+
+@router.get("/shipments/{shipment_id}/costs")
+async def get_logistics_costs_by_shipment(shipment_id: int):
+    pass
+
+
+@router.get("/costs/{cost_id}")
+async def get_logistics_cost(cost_id: int):
+    pass
+
+
+@router.patch("/costs/{cost_id}")
+async def update_logistics_cost(cost_id: int):
+    pass
+
+
+@router.delete("/costs/{cost_id}")
+async def delete_logistics_cost(cost_id: int):
+    pass
+
+
+@router.post("/costs/{cost_id}/mark-actual")
+async def mark_logistics_cost_as_actual(cost_id: int):
+    pass
+
+
+@router.post("/costs/{cost_id}/mark-paid")
+async def mark_logistics_cost_as_paid(cost_id: int):
+    pass
+
+
+# ============================================================
+# Delivery Orders
+# ============================================================
+
+@router.post("/shipments/{shipment_id}/delivery-orders")
+async def create_delivery_order(shipment_id: int):
+    pass
+
+
+@router.get("/shipments/{shipment_id}/delivery-orders")
+async def get_delivery_orders_by_shipment(shipment_id: int):
+    pass
+
+
+@router.get("/delivery-orders/{delivery_order_id}")
+async def get_delivery_order(delivery_order_id: int):
+    pass
+
+
+@router.patch("/delivery-orders/{delivery_order_id}")
+async def update_delivery_order(delivery_order_id: int):
+    pass
+
+
+@router.delete("/delivery-orders/{delivery_order_id}")
+async def delete_delivery_order(delivery_order_id: int):
+    pass
+
+
+@router.post("/delivery-orders/{delivery_order_id}/issue")
+async def issue_delivery_order(delivery_order_id: int):
+    pass
+
+
+@router.post("/delivery-orders/{delivery_order_id}/mark-delivered")
+async def mark_delivery_order_as_delivered(delivery_order_id: int):
+    pass
+
+
+@router.post("/delivery-orders/{delivery_order_id}/cancel")
+async def cancel_delivery_order(delivery_order_id: int):
+    pass
+
+
+# ============================================================
+# Logistics Summaries
+# ============================================================
+
+@router.get("/summary/active-shipments")
+async def get_active_shipments_summary():
+    pass
+
+
+@router.get("/summary/delayed-shipments")
+async def get_delayed_shipments_summary():
+    pass
+
+
+@router.get("/summary/upcoming-arrivals")
+async def get_upcoming_arrivals_summary():
+    pass
+
+
+@router.get("/summary/shipments-by-status")
+async def get_shipments_by_status_summary():
+    pass
+
+
+@router.get("/summary/trade-logistics/{trade_id}")
+async def get_trade_logistics_summary(trade_id: int):
+    pass
