@@ -9,6 +9,10 @@ from app.logistics.schemas import (
     CargoDischargedQuantityUpdate,
     ShipmentLegCreate,
     ShipmentLegUpdate,
+    PortCreate,
+    PortUpdate,
+    PortCallCreate,
+    PortCallUpdate,
 )
 from app.logistics.db import (
     get_shipments_db,
@@ -44,6 +48,21 @@ from app.logistics.db import (
     complete_shipment_leg_db,
     delay_shipment_leg_db,
     cancel_shipment_leg_db,
+    get_ports_db,
+    get_port_db,
+    add_port_db,
+    update_port_db,
+    delete_port_db,
+    get_port_calls_by_shipment_db,
+    get_port_call_db,
+    add_port_call_db,
+    update_port_call_db,
+    delete_port_call_db,
+    mark_port_call_as_arrived_db,
+    mark_port_call_as_berthed_db,
+    start_port_call_operations_db,
+    complete_port_call_operations_db,
+    mark_port_call_as_sailed_db,
 )
 
 
@@ -170,3 +189,58 @@ class ShipmentLegManager:
 
     async def cancel_shipment_leg(self, shipment_leg_id: int):
         return await cancel_shipment_leg_db(shipment_leg_id)
+
+
+class PortManager:
+    def __init__(self, port: PortCreate | PortUpdate | None = None):
+        self.port = port
+
+    async def get_ports(self):
+        return await get_ports_db()
+
+    async def get_port(self, port_id: int):
+        return await get_port_db(port_id)
+
+    async def create_port(self):
+        return await add_port_db(self.port)
+
+    async def update_port(self, port_id: int):
+        return await update_port_db(self.port, port_id)
+
+    async def delete_port(self, port_id: int):
+        return await delete_port_db(port_id)
+
+
+class PortCallManager:
+    def __init__(self, port_call: PortCallCreate | PortCallUpdate | None = None):
+        self.port_call = port_call
+
+    async def get_port_calls_by_shipment(self, shipment_id: int):
+        return await get_port_calls_by_shipment_db(shipment_id)
+
+    async def get_port_call(self, port_call_id: int):
+        return await get_port_call_db(port_call_id)
+
+    async def create_port_call(self, shipment_id: int):
+        return await add_port_call_db(shipment_id, self.port_call)
+
+    async def update_port_call(self, port_call_id: int):
+        return await update_port_call_db(self.port_call, port_call_id)
+
+    async def delete_port_call(self, port_call_id: int):
+        return await delete_port_call_db(port_call_id)
+
+    async def mark_port_call_as_arrived(self, port_call_id: int):
+        return await mark_port_call_as_arrived_db(port_call_id)
+
+    async def mark_port_call_as_berthed(self, port_call_id: int):
+        return await mark_port_call_as_berthed_db(port_call_id)
+
+    async def start_port_call_operations(self, port_call_id: int):
+        return await start_port_call_operations_db(port_call_id)
+
+    async def complete_port_call_operations(self, port_call_id: int):
+        return await complete_port_call_operations_db(port_call_id)
+
+    async def mark_port_call_as_sailed(self, port_call_id: int):
+        return await mark_port_call_as_sailed_db(port_call_id)

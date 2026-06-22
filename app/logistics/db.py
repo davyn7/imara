@@ -12,6 +12,11 @@ from app.logistics.schemas import (
     ShipmentLegCreate,
     ShipmentLegUpdate,
     ShipmentLegStatus,
+    PortCreate,
+    PortUpdate,
+    PortCallCreate,
+    PortCallUpdate,
+    PortCallStatus,
 )
 
 
@@ -324,3 +329,133 @@ async def cancel_shipment_leg_db(shipment_leg_id: int):
         shipment_leg_id,
         ShipmentLegStatus.CANCELLED,
     )
+
+
+# Port DB Operations
+
+async def get_ports_db():
+    response = supabase.table("ports").select("*").execute()
+    return response.data
+
+
+async def get_port_db(port_id: int):
+    response = (
+        supabase.table("ports")
+        .select("*")
+        .eq("id", port_id)
+        .execute()
+    )
+    return response.data
+
+
+async def add_port_db(port: PortCreate):
+    port_data = _serialize(port)
+    response = supabase.table("ports").insert(port_data).execute()
+    return response.data
+
+
+async def update_port_db(port: PortUpdate, port_id: int):
+    port_data = port.model_dump(mode="json", exclude_unset=True)
+    response = (
+        supabase.table("ports")
+        .update(port_data)
+        .eq("id", port_id)
+        .execute()
+    )
+    return response.data
+
+
+async def delete_port_db(port_id: int):
+    response = (
+        supabase.table("ports")
+        .delete()
+        .eq("id", port_id)
+        .execute()
+    )
+    return response.data
+
+
+async def _update_port_call_status_db(port_call_id: int, status: PortCallStatus):
+    response = (
+        supabase.table("port_calls")
+        .update({"status": status.value})
+        .eq("id", port_call_id)
+        .execute()
+    )
+    return response.data
+
+
+# Port Call DB Operations
+
+async def get_port_calls_by_shipment_db(shipment_id: int):
+    response = (
+        supabase.table("port_calls")
+        .select("*")
+        .eq("shipment_id", shipment_id)
+        .execute()
+    )
+    return response.data
+
+
+async def get_port_call_db(port_call_id: int):
+    response = (
+        supabase.table("port_calls")
+        .select("*")
+        .eq("id", port_call_id)
+        .execute()
+    )
+    return response.data
+
+
+async def add_port_call_db(shipment_id: int, port_call: PortCallCreate):
+    port_call_data = _serialize(port_call)
+    port_call_data["shipment_id"] = shipment_id
+    response = supabase.table("port_calls").insert(port_call_data).execute()
+    return response.data
+
+
+async def update_port_call_db(port_call: PortCallUpdate, port_call_id: int):
+    port_call_data = port_call.model_dump(mode="json", exclude_unset=True)
+    response = (
+        supabase.table("port_calls")
+        .update(port_call_data)
+        .eq("id", port_call_id)
+        .execute()
+    )
+    return response.data
+
+
+async def delete_port_call_db(port_call_id: int):
+    response = (
+        supabase.table("port_calls")
+        .delete()
+        .eq("id", port_call_id)
+        .execute()
+    )
+    return response.data
+
+
+async def mark_port_call_as_arrived_db(port_call_id: int):
+    return await _update_port_call_status_db(port_call_id, PortCallStatus.ARRIVED)
+
+
+async def mark_port_call_as_berthed_db(port_call_id: int):
+    return await _update_port_call_status_db(port_call_id, PortCallStatus.BERTHED)
+
+
+async def start_port_call_operations_db(port_call_id: int):
+    return await _update_port_call_status_db(
+        port_call_id,
+        PortCallStatus.OPERATIONS_STARTED,
+    )
+
+
+async def complete_port_call_operations_db(port_call_id: int):
+    return await _update_port_call_status_db(
+        port_call_id,
+        PortCallStatus.OPERATIONS_COMPLETED,
+    )
+
+
+async def mark_port_call_as_sailed_db(port_call_id: int):
+    return await _update_port_call_status_db(port_call_id, PortCallStatus.SAILED)

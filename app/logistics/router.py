@@ -1,7 +1,13 @@
 # app/logistics/router.py
 
 from fastapi import APIRouter
-from app.logistics.managers import ShipmentManager, CargoManager, ShipmentLegManager
+from app.logistics.managers import (
+    ShipmentManager,
+    CargoManager,
+    ShipmentLegManager,
+    PortManager,
+    PortCallManager,
+)
 from app.logistics.schemas import (
     ShipmentCreate,
     ShipmentUpdate,
@@ -11,6 +17,10 @@ from app.logistics.schemas import (
     CargoDischargedQuantityUpdate,
     ShipmentLegCreate,
     ShipmentLegUpdate,
+    PortCreate,
+    PortUpdate,
+    PortCallCreate,
+    PortCallUpdate,
 )
 
 router = APIRouter(prefix="/logistics", tags=["Logistics"])
@@ -336,28 +346,48 @@ async def cancel_shipment_leg(shipment_leg_id: int):
 # ============================================================
 
 @router.post("/ports")
-async def create_port():
-    pass
+async def create_port(port: PortCreate):
+    try:
+        manager = PortManager(port)
+        return await manager.create_port()
+    except Exception as e:
+        raise e
 
 
 @router.get("/ports")
 async def get_ports():
-    pass
+    try:
+        manager = PortManager()
+        return await manager.get_ports()
+    except Exception as e:
+        raise e
 
 
 @router.get("/ports/{port_id}")
 async def get_port(port_id: int):
-    pass
+    try:
+        manager = PortManager()
+        return await manager.get_port(port_id)
+    except Exception as e:
+        raise e
 
 
 @router.patch("/ports/{port_id}")
-async def update_port(port_id: int):
-    pass
+async def update_port(port_id: int, port: PortUpdate):
+    try:
+        manager = PortManager(port)
+        return await manager.update_port(port_id)
+    except Exception as e:
+        raise e
 
 
 @router.delete("/ports/{port_id}")
 async def delete_port(port_id: int):
-    pass
+    try:
+        manager = PortManager()
+        return await manager.delete_port(port_id)
+    except Exception as e:
+        raise e
 
 
 # ============================================================
@@ -365,53 +395,93 @@ async def delete_port(port_id: int):
 # ============================================================
 
 @router.post("/shipments/{shipment_id}/port-calls")
-async def create_port_call(shipment_id: int):
-    pass
+async def create_port_call(shipment_id: int, port_call: PortCallCreate):
+    try:
+        manager = PortCallManager(port_call)
+        return await manager.create_port_call(shipment_id)
+    except Exception as e:
+        raise e
 
 
 @router.get("/shipments/{shipment_id}/port-calls")
 async def get_port_calls_by_shipment(shipment_id: int):
-    pass
+    try:
+        manager = PortCallManager()
+        return await manager.get_port_calls_by_shipment(shipment_id)
+    except Exception as e:
+        raise e
 
 
 @router.get("/port-calls/{port_call_id}")
 async def get_port_call(port_call_id: int):
-    pass
+    try:
+        manager = PortCallManager()
+        return await manager.get_port_call(port_call_id)
+    except Exception as e:
+        raise e
 
 
 @router.patch("/port-calls/{port_call_id}")
-async def update_port_call(port_call_id: int):
-    pass
+async def update_port_call(port_call_id: int, port_call: PortCallUpdate):
+    try:
+        manager = PortCallManager(port_call)
+        return await manager.update_port_call(port_call_id)
+    except Exception as e:
+        raise e
 
 
 @router.delete("/port-calls/{port_call_id}")
 async def delete_port_call(port_call_id: int):
-    pass
+    try:
+        manager = PortCallManager()
+        return await manager.delete_port_call(port_call_id)
+    except Exception as e:
+        raise e
 
 
 @router.post("/port-calls/{port_call_id}/mark-arrived")
 async def mark_port_call_as_arrived(port_call_id: int):
-    pass
+    try:
+        manager = PortCallManager()
+        return await manager.mark_port_call_as_arrived(port_call_id)
+    except Exception as e:
+        raise e
 
 
 @router.post("/port-calls/{port_call_id}/mark-berthed")
 async def mark_port_call_as_berthed(port_call_id: int):
-    pass
+    try:
+        manager = PortCallManager()
+        return await manager.mark_port_call_as_berthed(port_call_id)
+    except Exception as e:
+        raise e
 
 
 @router.post("/port-calls/{port_call_id}/start-operations")
 async def start_port_call_operations(port_call_id: int):
-    pass
+    try:
+        manager = PortCallManager()
+        return await manager.start_port_call_operations(port_call_id)
+    except Exception as e:
+        raise e
 
 
 @router.post("/port-calls/{port_call_id}/complete-operations")
 async def complete_port_call_operations(port_call_id: int):
-    pass
+    try:
+        manager = PortCallManager()
+        return await manager.complete_port_call_operations(port_call_id)
+    except Exception as e:
+        raise e
 
 
 @router.post("/port-calls/{port_call_id}/mark-sailed")
 async def mark_port_call_as_sailed(port_call_id: int):
-    pass
+    try:
+        manager = PortCallManager()
+        return await manager.mark_port_call_as_sailed(port_call_id)
+    except Exception as e:
+        raise e
 
 
 # ============================================================
