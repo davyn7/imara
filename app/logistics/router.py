@@ -1,6 +1,6 @@
 # app/logistics/router.py
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Query
 from app.logistics.managers import (
     ShipmentManager,
     CargoManager,
@@ -12,6 +12,7 @@ from app.logistics.managers import (
     LogisticsEventManager,
     LogisticsCostManager,
     DeliveryOrderManager,
+    LogisticsSummaryManager,
 )
 from app.logistics.schemas import (
     ShipmentCreate,
@@ -803,25 +804,54 @@ async def cancel_delivery_order(delivery_order_id: int):
 # ============================================================
 
 @router.get("/summary/active-shipments")
-async def get_active_shipments_summary():
-    pass
+async def get_active_shipments_summary(
+    trade_id: int | None = Query(None),
+):
+    try:
+        manager = LogisticsSummaryManager()
+        return await manager.get_active_shipments_summary(trade_id)
+    except Exception as e:
+        raise e
 
 
 @router.get("/summary/delayed-shipments")
-async def get_delayed_shipments_summary():
-    pass
+async def get_delayed_shipments_summary(
+    trade_id: int | None = Query(None),
+):
+    try:
+        manager = LogisticsSummaryManager()
+        return await manager.get_delayed_shipments_summary(trade_id)
+    except Exception as e:
+        raise e
 
 
 @router.get("/summary/upcoming-arrivals")
-async def get_upcoming_arrivals_summary():
-    pass
+async def get_upcoming_arrivals_summary(
+    days: int = Query(14, ge=1),
+    trade_id: int | None = Query(None),
+):
+    try:
+        manager = LogisticsSummaryManager()
+        return await manager.get_upcoming_arrivals_summary(days, trade_id)
+    except Exception as e:
+        raise e
 
 
 @router.get("/summary/shipments-by-status")
-async def get_shipments_by_status_summary():
-    pass
+async def get_shipments_by_status_summary(
+    trade_id: int | None = Query(None),
+):
+    try:
+        manager = LogisticsSummaryManager()
+        return await manager.get_shipments_by_status_summary(trade_id)
+    except Exception as e:
+        raise e
 
 
 @router.get("/summary/trade-logistics/{trade_id}")
 async def get_trade_logistics_summary(trade_id: int):
-    pass
+    try:
+        manager = LogisticsSummaryManager()
+        return await manager.get_trade_logistics_summary(trade_id)
+    except Exception as e:
+        raise e

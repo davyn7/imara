@@ -1,6 +1,8 @@
 # app/logistics/db.py
 
-from datetime import date
+from collections import Counter
+from datetime import date, timedelta
+from decimal import Decimal
 
 from app.connection import supabase
 from app.logistics.schemas import (
@@ -35,6 +37,136 @@ from app.logistics.schemas import (
 
 def _serialize(model) -> dict:
     return model.model_dump(mode="json")
+
+
+def _to_decimal(value) -> Decimal:
+    if value is None:
+        return Decimal("0")
+    if isinstance(value, Decimal):
+        return value
+    return Decimal(str(value))
+
+
+def _amount_in_base(record: dict) -> Decimal:
+    base_amount = record.get("amount_base_currency")
+    if base_amount is not None:
+        return _to_decimal(base_amount)
+    return _to_decimal(record.get("amount"))
+
+
+def _parse_date(value) -> date | None:
+    if value is None:
+        return None
+    if isinstance(value, date):
+        return value
+    return date.fromisoformat(str(value)[:10])
+
+
+TERMINAL_SHIPMENT_STATUSES = {
+    ShipmentStatus.CLOSED.value,
+    ShipmentStatus.CANCELLED.value,
+}
+
+DELIVERED_SHIPMENT_STATUSES = {
+    ShipmentStatus.DELIVERED.value,
+    ShipmentStatus.CLOSED.value,
+}
+
+
+async def _get_shipments_filtered_db(trade_id: int | None = None):
+    query = supabase.table("shipments").select("*")
+    if trade_id is not None:
+        query = query.eq("trade_id", trade_id)
+    return query.execute().data
+
+
+def _is_active_shipment(shipment: dict) -> bool:
+    return shipment.get("status") not in TERMINAL_SHIPMENT_STATUSES
+
+
+def _is_delayed_shipment(shipment: dict, today: date) -> bool:
+    if shipment.get("status") == ShipmentStatus.DELAYED.value:
+        return True
+
+    status = shipment.get("status")
+    if status in TERMINAL_SHIPMENT_STATUSES or status in DELIVERED_SHIPMENT_STATUSES:
+        return False
+
+    estimated_arrival = _parse_date(shipment.get("estimated_arrival_date"))
+    if estimated_arrival is not None and estimated_arrival < today:
+        return True
+
+    estimated_departure = _parse_date(shipment.get("estimated_departure_date"))
+    if (
+        estimated_departure is not None
+        and estimated_departure < today
+        and status in {
+            ShipmentStatus.PLANNED.value,
+            ShipmentStatus.BOOKED.value,
+            ShipmentStatus.LOADING.value,
+        }
+    ):
+        return True
+
+    return False
+
+
+def _shipment_cost_totals(costs: list) -> dict:
+    estimated = Decimal("0")
+    actual = Decimal("0")
+    unpaid = Decimal("0")
+
+    for cost in costs:
+        amount = _amount_in_base(cost)
+        if cost.get("is_estimated"):
+            estimated += amount
+        else:
+            actual += amount
+        if not cost.get("paid_date"):
+            unpaid += amount
+
+    return {
+        "estimated": float(estimated),
+        "actual": float(actual),
+        "unpaid": float(unpaid),
+    }
+
+
+async def _serialize_shipment_logistics_row(shipment: dict) -> dict:
+    shipment_id = shipment["id"]
+    legs = await get_shipment_legs_db(shipment_id)
+    cargo = await get_cargo_by_shipment_db(shipment_id)
+    costs = await get_logistics_costs_by_shipment_db(shipment_id)
+    events = await get_logistics_events_by_shipment_db(shipment_id)
+    delivery_orders = await get_delivery_orders_by_shipment_db(shipment_id)
+    cost_totals = _shipment_cost_totals(costs)
+
+    return {
+        "shipment_id": shipment_id,
+        "trade_id": shipment.get("trade_id"),
+        "shipment_code": shipment.get("shipment_code"),
+        "status": shipment.get("status"),
+        "mode": shipment.get("mode"),
+        "origin_location": shipment.get("origin_location"),
+        "destination_location": shipment.get("destination_location"),
+        "estimated_departure_date": shipment.get("estimated_departure_date"),
+        "estimated_arrival_date": shipment.get("estimated_arrival_date"),
+        "actual_departure_date": shipment.get("actual_departure_date"),
+        "actual_arrival_date": shipment.get("actual_arrival_date"),
+        "counts": {
+            "legs": len(legs),
+            "cargo": len(cargo),
+            "costs": len(costs),
+            "events": len(events),
+            "delivery_orders": len(delivery_orders),
+        },
+        "legs_by_status": dict(Counter(leg.get("status") for leg in legs)),
+        "delivery_orders_by_status": dict(
+            Counter(order.get("status") for order in delivery_orders)
+        ),
+        "cost_totals": cost_totals,
+        "recent_events": events[-5:],
+    }
 
 
 async def _update_shipment_status_db(shipment_id: int, status: ShipmentStatus):
@@ -767,3 +899,115 @@ async def cancel_delivery_order_db(delivery_order_id: int):
         delivery_order_id,
         DeliveryOrderStatus.CANCELLED,
     )
+
+
+# Logistics Summary DB Operations
+
+async def get_active_shipments_summary_db(trade_id: int | None = None):
+    shipments = await _get_shipments_filtered_db(trade_id)
+    active = [shipment for shipment in shipments if _is_active_shipment(shipment)]
+
+    return {
+        "filters": {"trade_id": trade_id},
+        "active_count": len(active),
+        "by_status": dict(Counter(shipment.get("status") for shipment in active)),
+        "by_mode": dict(Counter(shipment.get("mode") for shipment in active)),
+        "shipments": active,
+    }
+
+
+async def get_delayed_shipments_summary_db(trade_id: int | None = None):
+    today = date.today()
+    shipments = await _get_shipments_filtered_db(trade_id)
+    delayed = [
+        shipment for shipment in shipments if _is_delayed_shipment(shipment, today)
+    ]
+
+    return {
+        "filters": {"trade_id": trade_id},
+        "as_of": today.isoformat(),
+        "delayed_count": len(delayed),
+        "by_status": dict(Counter(shipment.get("status") for shipment in delayed)),
+        "shipments": delayed,
+    }
+
+
+async def get_upcoming_arrivals_summary_db(
+    days: int = 14,
+    trade_id: int | None = None,
+):
+    today = date.today()
+    end_date = today + timedelta(days=days)
+    shipments = await _get_shipments_filtered_db(trade_id)
+
+    upcoming = []
+    for shipment in shipments:
+        if shipment.get("status") in TERMINAL_SHIPMENT_STATUSES:
+            continue
+
+        estimated_arrival = _parse_date(shipment.get("estimated_arrival_date"))
+        if estimated_arrival is None:
+            continue
+        if today <= estimated_arrival <= end_date:
+            upcoming.append(shipment)
+
+    upcoming.sort(key=lambda shipment: shipment.get("estimated_arrival_date") or "")
+
+    return {
+        "filters": {
+            "trade_id": trade_id,
+            "days": days,
+        },
+        "window_start": today.isoformat(),
+        "window_end": end_date.isoformat(),
+        "upcoming_count": len(upcoming),
+        "shipments": upcoming,
+    }
+
+
+async def get_shipments_by_status_summary_db(trade_id: int | None = None):
+    shipments = await _get_shipments_filtered_db(trade_id)
+
+    return {
+        "filters": {"trade_id": trade_id},
+        "total_count": len(shipments),
+        "by_status": dict(Counter(shipment.get("status") for shipment in shipments)),
+        "by_mode": dict(Counter(shipment.get("mode") for shipment in shipments)),
+    }
+
+
+async def get_trade_logistics_summary_db(trade_id: int):
+    shipments = await get_shipments_by_trade_db(trade_id)
+    shipment_rows = []
+    total_estimated_costs = Decimal("0")
+    total_actual_costs = Decimal("0")
+    total_unpaid_costs = Decimal("0")
+
+    for shipment in shipments:
+        row = await _serialize_shipment_logistics_row(shipment)
+        shipment_rows.append(row)
+        total_estimated_costs += Decimal(str(row["cost_totals"]["estimated"]))
+        total_actual_costs += Decimal(str(row["cost_totals"]["actual"]))
+        total_unpaid_costs += Decimal(str(row["cost_totals"]["unpaid"]))
+
+    active_count = sum(1 for shipment in shipments if _is_active_shipment(shipment))
+    delayed_count = sum(
+        1 for shipment in shipments if _is_delayed_shipment(shipment, date.today())
+    )
+
+    return {
+        "trade_id": trade_id,
+        "shipment_count": len(shipments),
+        "active_shipment_count": active_count,
+        "delayed_shipment_count": delayed_count,
+        "shipments_by_status": dict(
+            Counter(shipment.get("status") for shipment in shipments)
+        ),
+        "shipments_by_mode": dict(
+            Counter(shipment.get("mode") for shipment in shipments)
+        ),
+        "total_estimated_logistics_costs": float(total_estimated_costs),
+        "total_actual_logistics_costs": float(total_actual_costs),
+        "total_unpaid_logistics_costs": float(total_unpaid_costs),
+        "shipments": shipment_rows,
+    }

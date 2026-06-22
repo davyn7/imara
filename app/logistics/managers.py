@@ -103,6 +103,11 @@ from app.logistics.db import (
     issue_delivery_order_db,
     mark_delivery_order_as_delivered_db,
     cancel_delivery_order_db,
+    get_active_shipments_summary_db,
+    get_delayed_shipments_summary_db,
+    get_upcoming_arrivals_summary_db,
+    get_shipments_by_status_summary_db,
+    get_trade_logistics_summary_db,
 )
 
 
@@ -408,3 +413,24 @@ class DeliveryOrderManager:
 
     async def cancel_delivery_order(self, delivery_order_id: int):
         return await cancel_delivery_order_db(delivery_order_id)
+
+
+class LogisticsSummaryManager:
+    async def get_active_shipments_summary(self, trade_id: int | None = None):
+        return await get_active_shipments_summary_db(trade_id)
+
+    async def get_delayed_shipments_summary(self, trade_id: int | None = None):
+        return await get_delayed_shipments_summary_db(trade_id)
+
+    async def get_upcoming_arrivals_summary(
+        self,
+        days: int = 14,
+        trade_id: int | None = None,
+    ):
+        return await get_upcoming_arrivals_summary_db(days, trade_id)
+
+    async def get_shipments_by_status_summary(self, trade_id: int | None = None):
+        return await get_shipments_by_status_summary_db(trade_id)
+
+    async def get_trade_logistics_summary(self, trade_id: int):
+        return await get_trade_logistics_summary_db(trade_id)
